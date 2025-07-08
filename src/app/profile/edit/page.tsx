@@ -5,8 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Trash2, Upload } from "lucide-react";
 
 export default function EditProfilePage() {
+    const songs = [
+        { id: 1, title: "Groovy Morning", artist: "The Chillhop Collective" },
+        { id: 2, title: "Sunset Vibes", artist: "Indie Pop Creators" },
+        { id: 3, title: "Midnight Stroll", artist: "Synthwave Dreams" },
+    ];
+
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
             <AppHeader />
@@ -32,6 +39,42 @@ export default function EditProfilePage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Manage Music</CardTitle>
+                            <CardDescription>Upload songs to feature on your profile playlist.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label>Current Playlist</Label>
+                                <div className="border rounded-lg">
+                                    <div className="p-2 space-y-2">
+                                    {songs.map((song) => (
+                                        <div key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary">
+                                            <div>
+                                                <p className="text-sm font-medium">{song.title}</p>
+                                                <p className="text-xs text-muted-foreground">{song.artist}</p>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="music-upload">Upload New Song</Label>
+                                <div className="flex gap-2">
+                                    <Input id="music-upload" type="file" accept="audio/*" className="flex-grow"/>
+                                    <Button><Upload className="mr-2 h-4 w-4" /> Upload</Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">.mp3, .wav, .ogg supported. Max 10MB.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <ThemeSuggester />
                      <div className="flex justify-end gap-2">
                         <Button variant="outline">Cancel</Button>
