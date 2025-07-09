@@ -1,4 +1,5 @@
-import { AppHeader } from "@/components/app-header";
+
+import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
@@ -15,8 +16,7 @@ export default function StorePage() {
     ];
     
     return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <AppHeader />
+        <AppLayout>
             <main className="flex-1 p-4 md:p-8">
                 <div className="max-w-6xl mx-auto">
                     <div className="mb-8 text-center">
@@ -45,6 +45,6 @@ export default function StorePage() {
                     </div>
                 </div>
             </main>
-        </div>
+        </AppLayout>
     );
 }

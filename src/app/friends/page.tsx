@@ -1,4 +1,5 @@
-import { AppHeader } from "@/components/app-header";
+
+import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +19,7 @@ export default function FriendsPage() {
     ];
 
     return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <AppHeader />
+        <AppLayout>
             <main className="flex-1 p-4 md:p-8">
                 <Card className="max-w-4xl mx-auto">
                     <CardHeader>
@@ -73,6 +73,6 @@ export default function FriendsPage() {
                     </CardContent>
                 </Card>
             </main>
-        </div>
+        </AppLayout>
     );
 }

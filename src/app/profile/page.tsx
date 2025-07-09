@@ -1,16 +1,15 @@
+
 'use client';
 
-import { AppHeader } from "@/components/app-header";
+import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Edit, Music, QrCode, Video, Image as ImageIcon, PlayCircle, PauseCircle, SkipBack, SkipForward } from "lucide-react";
+import { Edit, Music, QrCode, Video, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
     const user = {
@@ -20,62 +19,15 @@ export default function ProfilePage() {
         bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people. Let's create something beautiful together.",
         qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qonnect.me/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
         music: ["Lo-fi beats", "Indie Pop", "Chillwave", "Ambient", "Future Funk"],
-        songs: [
-            { id: 1, title: "Groovy Morning", artist: "The Chillhop Collective", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-            { id: 2, title: "Sunset Vibes", artist: "Indie Pop Creators", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-            { id: 3, title: "Midnight Stroll", artist: "Synthwave Dreams", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
-        ],
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
     };
 
-    const [currentSongIndex, setCurrentSongIndex] = useState<number | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-
-    const handlePlayPause = (index: number) => {
-        if (currentSongIndex === index) {
-            if (isPlaying) {
-                audioRef.current?.pause();
-            } else {
-                audioRef.current?.play();
-            }
-        } else {
-            setCurrentSongIndex(index);
-        }
-    };
-
-    const handleNext = () => {
-        if (user.songs && currentSongIndex !== null) {
-            const nextIndex = (currentSongIndex + 1) % user.songs.length;
-            setCurrentSongIndex(nextIndex);
-        }
-    };
-
-    const handlePrev = () => {
-         if (user.songs && currentSongIndex !== null) {
-            const prevIndex = (currentSongIndex - 1 + user.songs.length) % user.songs.length;
-            setCurrentSongIndex(prevIndex);
-        }
-    };
-
-    useEffect(() => {
-        if (currentSongIndex !== null && audioRef.current) {
-            audioRef.current.src = user.songs[currentSongIndex].url;
-            audioRef.current.play().catch(e => {
-                console.error("Audio play failed:", e);
-                setIsPlaying(false);
-            });
-        }
-    }, [currentSongIndex, user.songs]);
-
-
     return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <AppHeader />
+        <AppLayout>
             <main className="flex-1 p-4 md:p-8">
                 <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
-                    <div className="w-full lg:w-2/3">
+                    <div className="w-full">
                         <Card>
                             <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
                                 <Image src="https://placehold.co/1200x400.png" alt="Cover photo" fill objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
@@ -146,51 +98,8 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
                     </div>
-
-                    <div className="w-full lg:w-1/3">
-                        <div className="lg:sticky lg:top-24">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="font-headline text-xl">My Playlist</CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <div className="rounded-b-lg bg-card-foreground/5">
-                                        <div className="p-4 bg-secondary/30 flex items-center justify-between">
-                                            <div>
-                                                <p className="font-semibold">{currentSongIndex !== null ? user.songs[currentSongIndex].title : 'Select a song'}</p>
-                                                <p className="text-sm text-muted-foreground">{currentSongIndex !== null ? user.songs[currentSongIndex].artist : '...'}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" onClick={handlePrev} disabled={currentSongIndex === null}>
-                                                    <SkipBack className="h-5 w-5" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" onClick={() => currentSongIndex !== null && handlePlayPause(currentSongIndex)} disabled={currentSongIndex === null} className="w-10 h-10">
-                                                    {isPlaying ? <PauseCircle className="h-8 w-8 text-accent" /> : <PlayCircle className="h-8 w-8 text-accent" />}
-                                                </Button>
-                                                <Button variant="ghost" size="icon" onClick={handleNext} disabled={currentSongIndex === null}>
-                                                    <SkipForward className="h-5 w-5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <div className="p-2 space-y-1 max-h-48 overflow-y-auto">
-                                            {user.songs.map((song, index) => (
-                                                <button key={song.id} onClick={() => handlePlayPause(index)} className={cn("w-full text-left p-2 rounded-md hover:bg-secondary flex items-center gap-4 transition-colors", currentSongIndex === index && 'bg-secondary')}>
-                                                    {currentSongIndex === index && isPlaying ? <PauseCircle className="h-5 w-5 text-accent" /> : <PlayCircle className="h-5 w-5 text-muted-foreground/50" />}
-                                                    <div>
-                                                        <p className="font-medium">{song.title}</p>
-                                                        <p className="text-sm text-muted-foreground">{song.artist}</p>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <audio ref={audioRef} onEnded={handleNext} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
                 </div>
             </main>
-        </div>
+        </AppLayout>
     );
 }
