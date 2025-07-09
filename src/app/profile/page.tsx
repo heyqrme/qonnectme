@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/app-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Music, QrCode, Video, Image as ImageIcon, PlayCircle, PauseCircle, SkipBack, SkipForward } from "lucide-react";
 import Image from "next/image";
@@ -74,30 +74,30 @@ export default function ProfilePage() {
         <div className="flex min-h-screen w-full flex-col bg-background">
             <AppHeader />
             <main className="flex-1 p-4 md:p-8">
-                <Card className="w-full max-w-5xl mx-auto">
-                    <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
-                         <Image src="https://placehold.co/1200x400.png" alt="Cover photo" fill objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
-                        <div className="relative flex items-end gap-4">
-                            <Avatar className="h-24 w-24 border-4 border-background">
-                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
-                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
-                                <p className="text-sm text-muted-foreground">@{user.username}</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="flex justify-between items-start flex-wrap gap-4 mb-6">
-                           <p className="max-w-prose text-muted-foreground flex-1">{user.bio}</p>
-                           <Button asChild variant="outline" size="sm">
-                                <Link href="/profile/edit"><Edit className="mr-2 h-4 w-4"/> Edit Profile</Link>
-                           </Button>
-                        </div>
+                <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
+                    <div className="w-full lg:w-2/3">
+                        <Card>
+                            <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
+                                <Image src="https://placehold.co/1200x400.png" alt="Cover photo" fill objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
+                                <div className="relative flex items-end gap-4">
+                                    <Avatar className="h-24 w-24 border-4 border-background">
+                                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
+                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
+                                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="flex justify-between items-start flex-wrap gap-4 mb-6">
+                                <p className="max-w-prose text-muted-foreground flex-1">{user.bio}</p>
+                                <Button asChild variant="outline" size="sm">
+                                        <Link href="/profile/edit"><Edit className="mr-2 h-4 w-4"/> Edit Profile</Link>
+                                </Button>
+                                </div>
 
-                        <div className="grid md:grid-cols-3 gap-8">
-                            <div className="md:col-span-2">
                                 <Tabs defaultValue="photos">
                                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                                         <TabsTrigger value="photos"><ImageIcon className="mr-2 h-4 w-4" /> Photos</TabsTrigger>
@@ -143,17 +143,24 @@ export default function ProfilePage() {
                                         <Button>Share Code</Button>
                                     </TabsContent>
                                 </Tabs>
-                            </div>
-                            <div className="md:col-span-1">
-                                <div className="md:sticky md:top-24">
-                                    <h3 className="text-xl font-semibold mb-4 font-headline">My Playlist</h3>
-                                    <div className="rounded-lg border bg-card-foreground/5">
-                                        <div className="p-4 bg-secondary/30 flex items-center justify-between rounded-t-lg">
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="w-full lg:w-1/3">
+                        <div className="lg:sticky lg:top-24">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="font-headline text-xl">My Playlist</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="rounded-b-lg bg-card-foreground/5">
+                                        <div className="p-4 bg-secondary/30 flex items-center justify-between">
                                             <div>
                                                 <p className="font-semibold">{currentSongIndex !== null ? user.songs[currentSongIndex].title : 'Select a song'}</p>
                                                 <p className="text-sm text-muted-foreground">{currentSongIndex !== null ? user.songs[currentSongIndex].artist : '...'}</p>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1">
                                                 <Button variant="ghost" size="icon" onClick={handlePrev} disabled={currentSongIndex === null}>
                                                     <SkipBack className="h-5 w-5" />
                                                 </Button>
@@ -178,11 +185,11 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <audio ref={audioRef} onEnded={handleNext} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </main>
         </div>
     );
