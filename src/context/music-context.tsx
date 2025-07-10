@@ -37,19 +37,27 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     const [currentSongIndex, setCurrentSongIndex] = useState<number | null>(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const isPlayingRef = useRef(isPlaying);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
     const handlePlayPause = (index?: number) => {
         const targetIndex = index ?? currentSongIndex;
         if (targetIndex === null) return;
-
+    
         if (currentSongIndex === targetIndex && audioRef.current) {
             if (isPlaying) {
                 audioRef.current.pause();
+                setIsPlaying(false);
             } else {
-                audioRef.current.play();
+                audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+                setIsPlaying(true);
             }
         } else {
             setCurrentSongIndex(targetIndex);
+            setIsPlaying(true); // Set intent to play the new song
         }
     };
 
@@ -57,6 +65,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         if (songs.length > 0 && currentSongIndex !== null) {
             const nextIndex = (currentSongIndex + 1) % songs.length;
             setCurrentSongIndex(nextIndex);
+            setIsPlaying(true);
         }
     };
 
@@ -64,25 +73,33 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         if (songs.length > 0 && currentSongIndex !== null) {
             const prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
             setCurrentSongIndex(prevIndex);
+            setIsPlaying(true);
         }
     };
 
     const handleDeleteSong = (id: number) => {
         const newSongs = songs.filter(song => song.id !== id);
-        setSongs(newSongs);
-
+        
+        let shouldPlay = isPlaying;
         if (currentSongIndex !== null && songs[currentSongIndex]?.id === id) {
+             if (audioRef.current) {
+                audioRef.current.pause();
+             }
             if (newSongs.length === 0) {
                 setCurrentSongIndex(null);
                 setIsPlaying(false);
-                if (audioRef.current) {
-                    audioRef.current.pause();
-                    audioRef.current.src = "";
-                }
+                if (audioRef.current) audioRef.current.src = "";
+                return;
             } else {
-                // If the deleted song was the current one, play the next one
-                 setCurrentSongIndex(currentSongIndex % newSongs.length);
+                 const newIndex = currentSongIndex % newSongs.length;
+                 setCurrentSongIndex(newIndex);
+                 if (!isPlaying) shouldPlay = false; // Don't start playing if it was paused
             }
+        }
+
+        setSongs(newSongs);
+        if (shouldPlay) {
+             setIsPlaying(true);
         }
     };
 
@@ -95,28 +112,43 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         };
         setSongs(prevSongs => [...prevSongs, newSong]);
     };
+    
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+    
+        const handleCanPlayThrough = () => {
+          if (isPlayingRef.current) {
+            audio.play().catch(e => {
+                console.error("Audio play failed on load:", e);
+                setIsPlaying(false);
+            });
+          }
+        };
+    
+        audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    
+        return () => {
+          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+        };
+      }, []);
+    
 
     useEffect(() => {
-        if (currentSongIndex !== null && audioRef.current) {
+        const audio = audioRef.current;
+        if (audio && currentSongIndex !== null && songs[currentSongIndex]) {
             const song = songs[currentSongIndex];
-            if (song) {
-                audioRef.current.src = song.url;
-                audioRef.current.play().catch(e => {
-                    console.error("Audio play failed:", e);
-                    setIsPlaying(false);
-                });
-            } else if (songs.length > 0) {
-                setCurrentSongIndex(0);
-            } else {
-                setCurrentSongIndex(null);
-                setIsPlaying(false);
-                if (audioRef.current) {
-                    audioRef.current.pause();
-                    audioRef.current.src = "";
-                }
+            if (audio.src !== song.url) {
+                audio.src = song.url;
+                audio.load();
             }
+        } else if (audio) {
+            audio.pause();
+            audio.src = "";
+            setIsPlaying(false);
         }
     }, [currentSongIndex, songs]);
+
 
     const value = {
         songs,
