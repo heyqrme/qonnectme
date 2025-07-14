@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -19,6 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 const navLinks = [
   { href: "/profile", label: "Profile", icon: User },
   { href: "/store", label: "Shop", icon: Store },
+  { href: "/cart", label: "Cart", icon: ShoppingCart },
+  { href: "/", label: "Logout", icon: LogOut },
 ];
 
 export function AppHeader() {
