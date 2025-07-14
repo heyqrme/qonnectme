@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, Users, Store, Menu } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,10 +17,8 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/profile", label: "Profile" },
-  { href: "/friends", label: "Friends" },
-  { href: "/store", label: "Store" },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/store", label: "Shop", icon: Store },
 ];
 
 export function AppHeader() {
@@ -63,14 +61,22 @@ export function AppHeader() {
               <QrCode className="h-6 w-6 text-primary" />
               <span className="font-headline">Qonnectme</span>
             </Link>
+             <NavLink href="/dashboard">Dashboard</NavLink>
             {navLinks.map(link => (
               <NavLink key={link.href} href={link.href}>{link.label}</NavLink>
             ))}
+             <NavLink href="/friends">Friends</NavLink>
           </nav>
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial" />
+        <Button asChild variant="ghost" size="icon">
+            <Link href="/cart">
+                <ShoppingCart className="h-5 w-5" />
+                <span className="sr-only">Cart</span>
+            </Link>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -84,11 +90,11 @@ export function AppHeader() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild><Link href="/profile/edit">Settings</Link></DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem asChild><Link href="/profile" className="flex items-center"><User className="mr-2 h-4 w-4" />Profile</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild><Link href="/profile/edit" className="flex items-center"><Settings className="mr-2 h-4 w-4" />Settings</Link></DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/">Logout</Link>
+              <Link href="/" className="flex items-center"><LogOut className="mr-2 h-4 w-4" />Logout</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
