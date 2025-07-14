@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Image as ImageIcon, MessageCircle, UserPlus, Video } from "lucide-react";
+import { Heart, Image as ImageIcon, MessageCircle, UserCheck, UserPlus, UserX, Video } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 type ActivityItem = {
   id: string;
-  type: 'new_friend' | 'new_photo' | 'new_post' | 'new_video';
+  type: 'new_friend' | 'new_photo' | 'new_post' | 'new_video' | 'friend_request';
   user: {
     name: string;
     username: string;
@@ -31,6 +31,12 @@ const activityFeed: ActivityItem[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     imageHint: 'concert lights',
     content: 'Last night was epic! 🎸',
+  },
+  {
+    id: '5',
+    type: 'friend_request',
+    user: { name: 'Morgan Riley', username: 'morganriley', avatarUrl: 'https://placehold.co/40x40.png' },
+    timestamp: '3 hours ago',
   },
   {
     id: '2',
@@ -66,6 +72,10 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
             <p>You and <Link href="#" className="font-semibold hover:underline">{activity.user.name}</Link> are now friends.</p>
           </div>
         );
+      case 'friend_request':
+        return (
+            <p><Link href="#" className="font-semibold hover:underline">{activity.user.name}</Link> sent you a friend request.</p>
+        );
       case 'new_post':
         return (
             <p className="text-muted-foreground whitespace-pre-wrap">{activity.content}</p>
@@ -90,6 +100,30 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
     }
   };
 
+  const renderActions = () => {
+    if (activity.type === 'friend_request') {
+      return (
+        <div className="flex gap-2 mt-4">
+            <Button size="sm"><UserCheck className="mr-2 h-4 w-4" /> Accept</Button>
+            <Button size="sm" variant="outline"><UserX className="mr-2 h-4 w-4" /> Decline</Button>
+        </div>
+      );
+    }
+    if (activity.type !== 'new_friend') {
+        return (
+            <div className="flex gap-4 mt-4 text-muted-foreground">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" /> 12
+                </Button>
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4" /> 3
+                </Button>
+            </div>
+        );
+    }
+    return null;
+  }
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -106,16 +140,7 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
                     <span className="text-muted-foreground">{activity.timestamp}</span>
                 </div>
                 <div className="mt-2">{renderContent()}</div>
-                {activity.type !== 'new_friend' && (
-                    <div className="flex gap-4 mt-4 text-muted-foreground">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                            <Heart className="h-4 w-4" /> 12
-                        </Button>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                            <MessageCircle className="h-4 w-4" /> 3
-                        </Button>
-                    </div>
-                )}
+                {renderActions()}
             </div>
         </div>
       </CardContent>
