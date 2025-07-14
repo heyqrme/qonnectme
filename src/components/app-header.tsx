@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const navLinks = [
   { href: "/profile", label: "Profile", icon: User },
+  { href: "/activity", label: "Activity", icon: Rss },
   { href: "/store", label: "Shop", icon: Store },
   { href: "/cart", label: "Cart", icon: ShoppingCart },
   { href: "/", label: "Logout", icon: LogOut },
