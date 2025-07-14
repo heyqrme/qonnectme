@@ -30,7 +30,7 @@ export default function ProfilePage() {
                     <div className="w-full">
                         <Card>
                             <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
-                                <Image src="https://placehold.co/1200x400.png" alt="Cover photo" fill objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
+                                <Image src="https://placehold.co/1200x400.png" alt="Cover photo" layout="fill" objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
                                 <div className="relative flex items-end gap-4">
                                     <Avatar className="h-24 w-24 border-4 border-background">
                                         <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
