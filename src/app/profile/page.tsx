@@ -20,7 +20,6 @@ function ProfileContent() {
     const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying } = useMusic();
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const avatarInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
 
     const user = {
@@ -38,8 +37,6 @@ function ProfileContent() {
         ]
     };
     
-    const [avatarPreview, setAvatarPreview] = useState<string>(user.avatarUrl);
-
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setNewSongFile(event.target.files[0]);
@@ -53,17 +50,6 @@ function ProfileContent() {
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
-        }
-    };
-
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
         }
     };
     
@@ -128,23 +114,9 @@ function ProfileContent() {
                                 <div className="flex flex-col items-center order-first md:order-none">
                                     <div className="relative group">
                                         <Avatar className="h-32 w-32 border-4 border-background">
-                                            <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
                                             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <button
-                                            onClick={() => avatarInputRef.current?.click()}
-                                            className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <Camera className="h-8 w-8 text-white" />
-                                            <span className="sr-only">Upload new avatar</span>
-                                        </button>
-                                        <input
-                                            type="file"
-                                            ref={avatarInputRef}
-                                            onChange={handleAvatarChange}
-                                            className="hidden"
-                                            accept="image/*"
-                                        />
                                     </div>
                                 </div>
                                 
