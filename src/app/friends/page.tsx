@@ -27,7 +27,7 @@ export default function FriendsPage() {
                         <CardDescription>Manage your friends and connection requests.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="friends">
+                        <Tabs defaultValue="requests">
                             <TabsList className="grid w-full grid-cols-2">
                                 <TabsTrigger value="friends">Friends ({friends.length})</TabsTrigger>
                                 <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
