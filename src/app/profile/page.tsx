@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { AppLayout } from "@/components/app-layout";
@@ -95,7 +96,7 @@ function ProfileContent() {
                             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
                                 {/* QR Code Section */}
                                 <div className="flex flex-col items-center justify-center gap-2 h-full">
-                                    <div className="p-2 bg-white rounded-lg shadow-md transform rotate-45">
+                                    <div className="p-2 bg-white rounded-lg shadow-md" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'}}>
                                         <Image src={user.qrCodeUrl} alt={`${user.name}'s QR Code`} width={128} height={128} />
                                     </div>
                                     <div className="flex flex-col gap-1 mt-2">
@@ -112,11 +113,19 @@ function ProfileContent() {
 
                                 {/* Avatar Section */}
                                 <div className="flex flex-col items-center order-first md:order-none">
-                                    <div className="relative group">
-                                        <Avatar className="h-32 w-32 border-4 border-background">
-                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
-                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
+                                    <div 
+                                        className="relative group h-36 w-36 bg-primary p-1"
+                                        style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'}}
+                                    >
+                                        <div 
+                                            className="h-full w-full bg-background flex items-center justify-center"
+                                            style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'}}
+                                        >
+                                            <Avatar className="h-32 w-32">
+                                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
+                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                        </div>
                                     </div>
                                 </div>
                                 
