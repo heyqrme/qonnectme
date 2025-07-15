@@ -152,7 +152,7 @@ export default function ActivityPage() {
   return (
     <AppLayout>
       <main className="flex-1 p-4 md:p-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-2xl mx-auto">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold font-headline">Activity Feed</h1>
                 <p className="text-muted-foreground">See what's new in your network.</p>
