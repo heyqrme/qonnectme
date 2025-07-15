@@ -1,12 +1,10 @@
 
 'use client';
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PlayCircle, PauseCircle, SkipBack, SkipForward, Music, Upload, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { PlayCircle, PauseCircle, SkipBack, SkipForward, Music, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMusic } from "@/context/music-context";
@@ -20,30 +18,15 @@ export function MusicPlayer() {
         handleNext,
         handlePrev,
         handleDeleteSong,
-        handleUploadSong
     } = useMusic();
     
-    const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setNewSongFile(event.target.files[0]);
-        }
-    };
-
-    const onUpload = () => {
-        if (newSongFile) {
-            handleUploadSong(newSongFile);
-            setNewSongFile(null);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        }
-    };
     
     const currentSong = currentSongIndex !== null ? songs[currentSongIndex] : null;
+
+    if (songs.length === 0) {
+        return null;
+    }
 
     return (
         <>
@@ -64,43 +47,22 @@ export function MusicPlayer() {
                         </Button>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                        <div className="space-y-3">
-                            <div>
-                                <Label className="text-xs">Current Playlist</Label>
-                                <div className="border rounded-lg mt-1 max-h-32 overflow-y-auto">
-                                    <div className="p-1 space-y-1">
-                                    {songs.length > 0 ? songs.map((song, index) => (
-                                        <div key={song.id} className={cn("flex items-center justify-between p-1.5 rounded-md hover:bg-secondary", currentSongIndex === index && 'bg-secondary')}>
-                                            <button onClick={() => handlePlayPause(index)} className="text-left flex-1 group overflow-hidden">
-                                                <p className="text-xs font-medium truncate flex items-center gap-2">
-                                                    {currentSongIndex === index && isPlaying ? <PauseCircle className="h-3 w-3 text-accent"/> : <PlayCircle className="h-3 w-3 text-muted-foreground group-hover:text-accent"/>}
-                                                    {song.title}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground truncate pl-5">{song.artist}</p>
-                                            </button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteSong(song.id)}>
-                                                <Trash2 className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    )) : <p className="text-xs text-muted-foreground p-4 text-center">No songs yet. Upload one!</p>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="music-upload" className="text-xs">Upload New Song</Label>
-                                <div className="flex gap-2">
-                                    <Input 
-                                        id="music-upload" 
-                                        type="file" 
-                                        accept="audio/*" 
-                                        className="h-8 text-xs flex-grow"
-                                        ref={fileInputRef}
-                                        onChange={onFileChange}
-                                    />
-                                    <Button size="sm" className="h-8" onClick={onUpload} disabled={!newSongFile}>
-                                        <Upload className="mr-1.5 h-3 w-3" /> Upload
+                        <div className="border rounded-lg mt-1 max-h-48 overflow-y-auto">
+                            <div className="p-1 space-y-1">
+                            {songs.length > 0 ? songs.map((song, index) => (
+                                <div key={song.id} className={cn("flex items-center justify-between p-1.5 rounded-md hover:bg-secondary", currentSongIndex === index && 'bg-secondary')}>
+                                    <button onClick={() => handlePlayPause(index)} className="text-left flex-1 group overflow-hidden">
+                                        <p className="text-xs font-medium truncate flex items-center gap-2">
+                                            {currentSongIndex === index && isPlaying ? <PauseCircle className="h-3 w-3 text-accent"/> : <PlayCircle className="h-3 w-3 text-muted-foreground group-hover:text-accent"/>}
+                                            {song.title}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground truncate pl-5">{song.artist}</p>
+                                    </button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteSong(song.id)}>
+                                        <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
+                            )) : <p className="text-xs text-muted-foreground p-4 text-center">No songs yet. Upload one!</p>}
                             </div>
                         </div>
                     </CardContent>

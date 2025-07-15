@@ -6,21 +6,44 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Edit, Music, QrCode, Video, Image as ImageIcon } from "lucide-react";
+import { useMusic } from "@/context/music-context";
+import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import React, { useRef, useState } from "react";
 
 export default function ProfilePage() {
+    const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying, handleDeleteSong } = useMusic();
+    const [newSongFile, setNewSongFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     const user = {
         name: "Jane Doe",
         username: "janedoe",
         avatarUrl: "https://placehold.co/128x128.png",
         bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people. Let's create something beautiful together.",
         qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qonnect.me/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
-        music: ["Lo-fi beats", "Indie Pop", "Chillwave", "Ambient", "Future Funk"],
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
+    };
+
+    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            setNewSongFile(event.target.files[0]);
+        }
+    };
+
+    const onUpload = () => {
+        if (newSongFile) {
+            handleUploadSong(newSongFile);
+            setNewSongFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
     };
 
     return (
@@ -79,11 +102,51 @@ export default function ProfilePage() {
                                         </div>
                                     </TabsContent>
                                     <TabsContent value="music" className="mt-4">
-                                        <div>
-                                            <h3 className="text-xl font-semibold mb-4 font-headline">My Vibe</h3>
-                                            <div className="flex flex-wrap gap-3">
-                                                {user.music.map(genre => <Badge key={genre} variant="outline" className="text-md py-2 px-4 border-accent text-accent bg-accent/10">{genre}</Badge>)}
+                                        <div className="grid gap-6">
+                                            <div>
+                                                <h3 className="text-xl font-semibold mb-4 font-headline">My Vibe</h3>
+                                                <p className="text-muted-foreground mb-4">The tracks I've uploaded. Click to play!</p>
+                                                <div className="space-y-2">
+                                                    {songs.map((song, index) => (
+                                                        <div key={song.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-secondary">
+                                                            <button onClick={() => handlePlayPause(index)} className="text-accent">
+                                                                {isPlaying && currentSongIndex === index ? <Music className="h-5 w-5 animate-pulse" /> : <Music className="h-5 w-5" />}
+                                                            </button>
+                                                            <div className="flex-1">
+                                                                <p className="font-medium">{song.title}</p>
+                                                                <p className="text-sm text-muted-foreground">{song.artist}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {songs.length === 0 && (
+                                                        <p className="text-muted-foreground text-center py-4">Your playlist is empty. Upload a song to get started!</p>
+                                                    )}
+                                                </div>
                                             </div>
+
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center gap-2"><Upload className="h-5 w-5"/> Upload Music</CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="music-upload">Upload a new song file</Label>
+                                                        <div className="flex gap-2">
+                                                        <Input 
+                                                            id="music-upload" 
+                                                            type="file" 
+                                                            accept="audio/*" 
+                                                            ref={fileInputRef}
+                                                            onChange={onFileChange}
+                                                        />
+                                                        <Button onClick={onUpload} disabled={!newSongFile}>
+                                                            <Upload className="mr-2 h-4 w-4" /> Upload
+                                                        </Button>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+
                                         </div>
                                     </TabsContent>
                                     <TabsContent value="qrcode" className="mt-4 flex flex-col items-center justify-center text-center gap-4 py-8">
