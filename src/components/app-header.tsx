@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/activity", label: "Activity", icon: Rss },
   { href: "/friends", label: "Friends", icon: Users },
@@ -44,7 +43,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
-      <Link href="/dashboard" className="flex items-center gap-2 font-semibold" prefetch={false}>
+      <Link href="/profile" className="flex items-center gap-2 font-semibold" prefetch={false}>
         <QrCode className="h-6 w-6 text-primary" />
         <span className="font-headline text-lg">Qonnectme</span>
       </Link>
@@ -62,7 +61,7 @@ export function AppHeader() {
         </SheetTrigger>
         <SheetContent side="left">
           <nav className="grid gap-6 text-lg font-medium">
-            <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold mb-4" prefetch={false}>
+            <Link href="/profile" className="flex items-center gap-2 text-lg font-semibold mb-4" prefetch={false}>
               <QrCode className="h-6 w-6 text-primary" />
               <span className="font-headline">Qonnectme</span>
             </Link>
