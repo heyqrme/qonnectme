@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Image as ImageIcon, MessageCircle, UserCheck, UserPlus, UserX, Video } from "lucide-react";
+import { Heart, Image as ImageIcon, MessageCircle, UserCheck, UserPlus, UserX, Video, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 type ActivityItem = {
   id: string;
-  type: 'new_friend' | 'new_photo' | 'new_post' | 'new_video' | 'friend_request';
+  type: 'new_friend' | 'new_photo' | 'new_post' | 'new_video' | 'friend_request' | 'new_message';
   user: {
     name: string;
     username: string;
@@ -23,6 +23,13 @@ type ActivityItem = {
 };
 
 const activityFeed: ActivityItem[] = [
+    {
+    id: '6',
+    type: 'new_message',
+    user: { name: 'Drew Chen', username: 'drewchen', avatarUrl: 'https://placehold.co/40x40.png' },
+    timestamp: '1 hour ago',
+    content: 'Hey, are you going to the show on Friday?',
+  },
   {
     id: '1',
     type: 'new_photo',
@@ -56,7 +63,7 @@ const activityFeed: ActivityItem[] = [
     type: 'new_video',
     user: { name: 'Taylor Smith', username: 'taylorsmith', avatarUrl: 'https://placehold.co/40x40.png' },
     timestamp: '2 days ago',
-    imageUrl: 'https://placehold.co/300x200.png',
+    imageUrl: 'https://placehold.co/300x400.png',
     imageHint: 'skateboarding video',
     content: 'Working on some new tricks!',
   },
@@ -75,6 +82,13 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
       case 'friend_request':
         return (
             <p><Link href="#" className="font-semibold hover:underline">{activity.user.name}</Link> sent you a friend request.</p>
+        );
+      case 'new_message':
+        return (
+            <div className="border rounded-lg p-4 bg-secondary/50 hover:bg-secondary transition-colors">
+                <p className="font-semibold"><Link href="#" className="hover:underline">{activity.user.name}</Link> sent you a message:</p>
+                <p className="text-muted-foreground mt-2 italic">"{activity.content}"</p>
+            </div>
         );
       case 'new_post':
         return (
@@ -108,6 +122,13 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
             <Button size="sm" variant="outline"><UserX className="mr-2 h-4 w-4" /> Decline</Button>
         </div>
       );
+    }
+    if (activity.type === 'new_message') {
+        return (
+            <div className="flex gap-4 mt-4">
+                <Button size="sm"><Mail className="mr-2 h-4 w-4" /> Reply</Button>
+            </div>
+        );
     }
     if (activity.type !== 'new_friend') {
         return (
