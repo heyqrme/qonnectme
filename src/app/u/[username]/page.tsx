@@ -1,14 +1,17 @@
 
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { QrCode, UserPlus } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+import React from "react";
 
-// This is a placeholder for fetching user data based on the username
-// In a real app, you would fetch this from your database.
+// This is a placeholder for fetching user data and checking auth status
+// In a real app, you would fetch this from your database and auth provider.
 const fetchUserByUsername = async (username: string) => {
-    // Mock data for demonstration
     const mockUsers: { [key: string]: any } = {
         janedoe: {
             name: "Jane Doe",
@@ -28,9 +31,58 @@ const fetchUserByUsername = async (username: string) => {
     return mockUsers[username] || null;
 };
 
+// This is a placeholder for checking if the current visitor is logged in.
+const useIsRegisteredUser = () => {
+    // In a real app, you would check for a valid session here.
+    // For this prototype, we'll toggle it to simulate both states.
+    // To test the "logged in" view, change this to `true`.
+    const [isRegistered] = React.useState(false); 
+    return isRegistered;
+};
 
-export default async function PublicProfilePage({ params }: { params: { username: string } }) {
-    const user = await fetchUserByUsername(params.username);
+
+export default function PublicProfilePage({ params }: { params: { username: string } }) {
+    const [user, setUser] = React.useState<any>(null);
+    const [loading, setLoading] = React.useState(true);
+    const isRegisteredUser = useIsRegisteredUser();
+    const { toast } = useToast();
+
+    React.useEffect(() => {
+        const loadUser = async () => {
+            const userData = await fetchUserByUsername(params.username);
+            setUser(userData);
+            setLoading(false);
+        }
+        loadUser();
+    }, [params.username]);
+
+    const handleSendRequest = () => {
+        toast({
+            title: "Request Sent!",
+            description: `Your friend request to ${user.name} has been sent.`,
+        });
+    };
+
+    if (loading) {
+        // You can add a loading skeleton here
+        return (
+             <div className="flex items-center justify-center min-h-screen bg-background p-4">
+                <Card className="w-full max-w-md text-center shadow-2xl animate-pulse">
+                    <CardHeader>
+                        <div className="h-32 w-32 rounded-full bg-muted mx-auto"></div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                           <div className="h-8 bg-muted rounded w-1/2 mx-auto"></div>
+                           <div className="h-4 bg-muted rounded w-1/4 mx-auto"></div>
+                        </div>
+                        <div className="h-6 bg-muted rounded w-3/4 mx-auto"></div>
+                        <div className="h-12 bg-muted rounded w-full"></div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     if (!user) {
         return (
@@ -64,11 +116,17 @@ export default async function PublicProfilePage({ params }: { params: { username
                     <p className="text-muted-foreground">
                         {user.bio}
                     </p>
-                    <Button asChild size="lg" className="w-full">
-                        <Link href="/signup">
-                            <UserPlus className="mr-2" /> Sign Up to Connect
-                        </Link>
-                    </Button>
+                    {isRegisteredUser ? (
+                        <Button onClick={handleSendRequest} size="lg" className="w-full">
+                            <UserPlus className="mr-2" /> Send Friend Request
+                        </Button>
+                    ) : (
+                        <Button asChild size="lg" className="w-full">
+                            <Link href="/signup">
+                                <UserPlus className="mr-2" /> Sign Up to Connect
+                            </Link>
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         </div>
