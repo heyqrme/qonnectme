@@ -28,7 +28,7 @@ const activityFeed: ActivityItem[] = [
     type: 'new_photo',
     user: { name: 'Alex Ray', username: 'alexray', avatarUrl: 'https://placehold.co/40x40.png' },
     timestamp: '2 hours ago',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://placehold.co/300x200.png',
     imageHint: 'concert lights',
     content: 'Last night was epic! 🎸',
   },
@@ -56,7 +56,7 @@ const activityFeed: ActivityItem[] = [
     type: 'new_video',
     user: { name: 'Taylor Smith', username: 'taylorsmith', avatarUrl: 'https://placehold.co/40x40.png' },
     timestamp: '2 days ago',
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: 'https://placehold.co/300x200.png',
     imageHint: 'skateboarding video',
     content: 'Working on some new tricks!',
   },
@@ -86,7 +86,7 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
           <div className="space-y-4">
             {activity.content && <p className="text-muted-foreground">{activity.content}</p>}
             <div className="rounded-lg overflow-hidden border relative">
-              <Image src={activity.imageUrl!} alt="User media" width={600} height={400} className="w-full h-auto object-cover" data-ai-hint={activity.imageHint} />
+              <Image src={activity.imageUrl!} alt="User media" width={300} height={200} className="w-full h-auto object-cover" data-ai-hint={activity.imageHint} />
               {activity.type === 'new_video' && (
                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <Video className="h-12 w-12 text-white/80" />
