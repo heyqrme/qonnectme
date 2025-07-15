@@ -52,7 +52,7 @@ export default function Home() {
     };
   }, []);
 
-  const customQrImageBase64 = "https://i.imgur.com/46KNt6c.jpeg";
+  const customQrImageBase64 = "https://imgur.com/46KNt6c";
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative diagonal-lines">
@@ -289,7 +289,7 @@ export default function Home() {
                         className={`mx-auto transition-all duration-300 rounded-md ${hoverQR ? 'qr-pulse scale-105' : ''}`}
                         data-ai-hint="qr code"
                       />
-                      <p className="text-center mt-2 text-sm text-gray-400">Demo QR Code</p>
+                      <p className="text-center mt-2 text-sm text-gray-400">   Scan Me I like you</p>
                       
                       {/* Decorative corner elements for QR code */}
                       <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-purple-500 opacity-80"></div>
