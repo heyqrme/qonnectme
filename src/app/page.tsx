@@ -53,8 +53,6 @@ export default function Home() {
     };
   }, []);
 
-  // TODO: Step 1: Use an online tool (search "image to base64 converter") to convert your JPEG.
-  // Step 2: Paste the resulting string here. It will look like: 'data:image/jpeg;base64,/9j/4AAQSkZ...'
   const customQrImageBase64 = "https://placehold.co/200x200.png";
 
   return (
