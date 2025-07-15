@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { QRCodeSVG } from "qrcode.react";
 import Link from 'next/link';
+import Image from "next/image";
 
 // A simple placeholder for the Logo component
 const Logo = ({ size = "large", withText = false, className = "" }) => (
@@ -51,6 +52,10 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+  // TODO: Step 1: Use an online tool (search "image to base64 converter") to convert your JPEG.
+  // Step 2: Paste the resulting string here. It will look like: 'data:image/jpeg;base64,/9j/4AAQSkZ...'
+  const customQrImageBase64 = "https://placehold.co/200x200.png";
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative diagonal-lines">
@@ -279,13 +284,13 @@ export default function Home() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <QRCodeSVG 
-                        value="https://qonnect.me/add-friend/demo"
-                        size={200} 
-                        bgColor="#000000"
-                        fgColor={hoverQR ? "#c084fc" : "#ffffff"}
-                        level="H"
-                        className={`mx-auto transition-all duration-300 ${hoverQR ? 'qr-pulse scale-105' : ''}`}
+                      <Image 
+                        src={customQrImageBase64}
+                        alt="Demo QR Code"
+                        width={200} 
+                        height={200}
+                        className={`mx-auto transition-all duration-300 rounded-md ${hoverQR ? 'qr-pulse scale-105' : ''}`}
+                        data-ai-hint="qr code"
                       />
                       <p className="text-center mt-2 text-sm text-gray-400">Demo QR Code</p>
                       
