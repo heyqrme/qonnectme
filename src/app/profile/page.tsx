@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useMusic } from "@/context/music-context";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload, Camera, Copy } from "lucide-react";
+import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -31,6 +32,10 @@ function ProfileContent() {
         profileUrl: "https://qonnect.me/janedoe",
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
+        posts: [
+            { id: 1, content: "Just discovered a new chillwave artist, totally recommend checking out their stuff. Perfect for late-night coding sessions. 🎧", timestamp: "1 day ago" },
+            { id: 2, content: "Last night was epic! 🎸 What a show!", timestamp: "3 days ago" },
+        ]
     };
     
     const [avatarPreview, setAvatarPreview] = useState<string>(user.avatarUrl);
@@ -131,7 +136,7 @@ function ProfileContent() {
                                     <TabsTrigger value="photos"><ImageIcon className="mr-2 h-4 w-4" /> Photos</TabsTrigger>
                                     <TabsTrigger value="videos"><Video className="mr-2 h-4 w-4" /> Videos</TabsTrigger>
                                     <TabsTrigger value="music"><Music className="mr-2 h-4 w-4" /> Music</TabsTrigger>
-                                    <TabsTrigger value="qrcode"><QrCode className="mr-2 h-4 w-4" /> QR Code</TabsTrigger>
+                                    <TabsTrigger value="posts"><MessageSquare className="mr-2 h-4 w-4" /> Posts</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="photos" className="mt-4">
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -202,13 +207,45 @@ function ProfileContent() {
 
                                     </div>
                                 </TabsContent>
-                                <TabsContent value="qrcode" className="mt-4 flex flex-col items-center justify-center text-center gap-4 py-8">
-                                    <div className="p-4 bg-white rounded-lg shadow-lg">
-                                        <Image src={user.qrCodeUrl} alt="Your QR Code" width={150} height={150} />
+                                <TabsContent value="posts" className="mt-4">
+                                    <div className="grid gap-6">
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Create a new post</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-4">
+                                                <Textarea placeholder="What's on your mind?" />
+                                                <Button>Post</Button>
+                                            </CardContent>
+                                        </Card>
+                                        <div className="space-y-4">
+                                            <h3 className="text-xl font-semibold font-headline">Your Posts</h3>
+                                            {user.posts.map(post => (
+                                                <Card key={post.id}>
+                                                    <CardContent className="p-6">
+                                                        <div className="flex gap-4">
+                                                            <Avatar>
+                                                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
+                                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 text-sm">
+                                                                    <p className="font-semibold">{user.name}</p>
+                                                                    <p className="text-muted-foreground">@{user.username}</p>
+                                                                    <span className="text-muted-foreground">·</span>
+                                                                    <p className="text-muted-foreground">{post.timestamp}</p>
+                                                                </div>
+                                                                <p className="mt-2 text-card-foreground">{post.content}</p>
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                            {user.posts.length === 0 && (
+                                                <p className="text-muted-foreground text-center py-4">You haven't made any posts yet.</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <h3 className="font-semibold">Your Unique Qonnectme Code</h3>
-                                    <p className="text-muted-foreground max-w-xs">Share this with friends to connect instantly. You can also buy merchandise with your code in our store!</p>
-                                    <Button onClick={handleCopyLink}>Share Code</Button>
                                 </TabsContent>
                             </Tabs>
                         </CardContent>
