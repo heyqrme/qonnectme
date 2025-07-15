@@ -3,8 +3,10 @@ import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCheck, UserX } from "lucide-react";
+import { UserCheck, UserPlus, UserX } from "lucide-react";
 
 export default function FriendsPage() {
     const friends = [
@@ -28,9 +30,10 @@ export default function FriendsPage() {
                     </CardHeader>
                     <CardContent>
                         <Tabs defaultValue="requests">
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="friends">Friends ({friends.length})</TabsTrigger>
                                 <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
+                                <TabsTrigger value="add">Add Friend</TabsTrigger>
                             </TabsList>
                             <TabsContent value="friends" className="mt-4">
                                 <div className="space-y-4">
@@ -67,6 +70,17 @@ export default function FriendsPage() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </TabsContent>
+                             <TabsContent value="add" className="mt-4">
+                                <div className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="add-friend-input">Username or Email</Label>
+                                        <div className="flex gap-2 mt-1">
+                                            <Input id="add-friend-input" placeholder="e.g., alexray or alex@example.com" />
+                                            <Button><UserPlus className="mr-2 h-4 w-4" /> Send Request</Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </Tabs>
