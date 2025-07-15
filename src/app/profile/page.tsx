@@ -8,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MusicProvider, useMusic } from "@/context/music-context";
+import { useMusic } from "@/context/music-context";
 import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
 
-function ProfilePageContent() {
+export default function ProfilePage() {
     const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying } = useMusic();
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -166,11 +166,3 @@ function ProfilePageContent() {
     );
 }
 
-
-export default function ProfilePage() {
-    return (
-        <MusicProvider>
-            <ProfilePageContent />
-        </MusicProvider>
-    )
-}
