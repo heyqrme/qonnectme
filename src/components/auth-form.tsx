@@ -4,13 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/auth-context";
 import { QrCode } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
 
 export function AuthForm() {
   const pathname = usePathname();
   const router = useRouter();
+  const { login } = useAuth();
+
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
   const isLogin = pathname === '/login';
   const title = isLogin ? 'Welcome Back!' : 'Create an Account';
   const description = isLogin ? 'Enter your credentials to access your account.' : 'Enter your details to get started.';
@@ -20,6 +27,7 @@ export function AuthForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    login(email, password);
     router.push('/profile');
   };
 
@@ -40,7 +48,7 @@ export function AuthForm() {
           )}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="m@example.com" required />
+            <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
@@ -51,7 +59,7 @@ export function AuthForm() {
                 </Link>
               )}
             </div>
-            <Input id="password" type="password" required />
+            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full">
             {buttonText}

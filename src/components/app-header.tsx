@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/context/auth-context";
 
 const navLinks = [
   { href: "/profile", label: "Profile", icon: User },
@@ -28,6 +29,7 @@ const navLinks = [
 export function AppHeader() {
   const pathname = usePathname();
   const { setTheme, theme } = useTheme();
+  const { user, logout } = useAuth();
 
   const NavLink = ({ href, children, className }: { href: string, children: React.ReactNode, className?: string }) => (
     <Link
@@ -104,10 +106,12 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild><Link href="/profile" className="flex items-center"><User className="mr-2 h-4 w-4" />Profile</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link href="/profile/edit" className="flex items-center"><Edit className="mr-2 h-4 w-4" />Edit Profile</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link href="/admin" className="flex items-center"><Shield className="mr-2 h-4 w-4" />Admin</Link></DropdownMenuItem>
+            {user?.role === 'admin' && (
+                <DropdownMenuItem asChild><Link href="/admin" className="flex items-center"><Shield className="mr-2 h-4 w-4" />Admin</Link></DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/" className="flex items-center"><LogOut className="mr-2 h-4 w-4" />Logout</Link>
+            <DropdownMenuItem onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,4 +1,6 @@
 
+'use client';
+
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Trash2, Eye, Edit, PlusCircle } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { MoreHorizontal, Trash2, Eye, Edit, PlusCircle, ShieldAlert } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 const users = [
     {
@@ -66,137 +71,181 @@ const products = [
     { id: 6, name: "QR Code Cap", price: 22.99, image: "https://placehold.co/100x100.png", hint: "cap mockup" },
 ];
 
-export default function AdminDashboardPage() {
+function AdminDashboard() {
     return (
-        <AppLayout>
-            <main className="flex-1 p-4 md:p-8">
-                <div className="max-w-6xl mx-auto grid gap-8">
-                    <div className="mb-2">
-                        <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-                        <p className="text-muted-foreground">Manage users and other application settings.</p>
-                    </div>
+        <main className="flex-1 p-4 md:p-8">
+            <div className="max-w-6xl mx-auto grid gap-8">
+                <div className="mb-2">
+                    <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
+                    <p className="text-muted-foreground">Manage users and other application settings.</p>
+                </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Users</CardTitle>
-                            <CardDescription>A list of all users in the system.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>User</TableHead>
-                                        <TableHead className="hidden sm:table-cell">Email</TableHead>
-                                        <TableHead className="hidden md:table-cell">Joined</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>
-                                            <span className="sr-only">Actions</span>
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {users.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-4">
-                                                    <Avatar>
-                                                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person avatar"/>
-                                                        <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-medium">{user.name}</p>
-                                                        <p className="text-sm text-muted-foreground">@{user.username}</p>
-                                                    </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Users</CardTitle>
+                        <CardDescription>A list of all users in the system.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Email</TableHead>
+                                    <TableHead className="hidden md:table-cell">Joined</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>
+                                        <span className="sr-only">Actions</span>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-4">
+                                                <Avatar>
+                                                    <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person avatar"/>
+                                                    <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium">{user.name}</p>
+                                                    <p className="text-sm text-muted-foreground">@{user.username}</p>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell className="hidden sm:table-cell">{user.email}</TableCell>
-                                            <TableCell className="hidden md:table-cell">{user.joined}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={user.status === 'Active' ? 'default' : 'secondary'} className={user.status === 'Active' ? 'bg-green-600/20 text-green-400 border-green-600/30' : ''}>
-                                                    {user.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem className="flex items-center gap-2"><Eye className="h-4 w-4" />View Profile</DropdownMenuItem>
-                                                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive"><Trash2 className="h-4 w-4" />Delete User</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle>Store Merchandise</CardTitle>
-                                <CardDescription>Manage your store's products.</CardDescription>
-                            </div>
-                            <Button size="sm" className="flex items-center gap-2">
-                                <PlusCircle className="h-4 w-4" />
-                                Add Product
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[80px] hidden sm:table-cell">Image</TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>
-                                            <span className="sr-only">Actions</span>
-                                        </TableHead>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden sm:table-cell">{user.email}</TableCell>
+                                        <TableCell className="hidden md:table-cell">{user.joined}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.status === 'Active' ? 'default' : 'secondary'} className={user.status === 'Active' ? 'bg-green-600/20 text-green-400 border-green-600/30' : ''}>
+                                                {user.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Toggle menu</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem className="flex items-center gap-2"><Eye className="h-4 w-4" />View Profile</DropdownMenuItem>
+                                                    <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive"><Trash2 className="h-4 w-4" />Delete User</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {products.map((product) => (
-                                        <TableRow key={product.id}>
-                                            <TableCell className="hidden sm:table-cell">
-                                                <Image
-                                                    alt={product.name}
-                                                    className="aspect-square rounded-md object-cover"
-                                                    height="64"
-                                                    src={product.image}
-                                                    width="64"
-                                                    data-ai-hint={product.hint}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-medium">{product.name}</TableCell>
-                                            <TableCell>${product.price.toFixed(2)}</TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem className="flex items-center gap-2"><Edit className="h-4 w-4" />Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive"><Trash2 className="h-4 w-4" />Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Store Merchandise</CardTitle>
+                            <CardDescription>Manage your store's products.</CardDescription>
+                        </div>
+                        <Button size="sm" className="flex items-center gap-2">
+                            <PlusCircle className="h-4 w-4" />
+                            Add Product
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[80px] hidden sm:table-cell">Image</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>
+                                        <span className="sr-only">Actions</span>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {products.map((product) => (
+                                    <TableRow key={product.id}>
+                                        <TableCell className="hidden sm:table-cell">
+                                            <Image
+                                                alt={product.name}
+                                                className="aspect-square rounded-md object-cover"
+                                                height="64"
+                                                src={product.image}
+                                                width="64"
+                                                data-ai-hint={product.hint}
+                                            />
+                                        </TableCell>
+                                        <TableCell className="font-medium">{product.name}</TableCell>
+                                        <TableCell>${product.price.toFixed(2)}</TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Toggle menu</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem className="flex items-center gap-2"><Edit className="h-4 w-4" />Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive"><Trash2 className="h-4 w-4" />Delete</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+        </main>
+    )
+}
+
+
+export default function AdminDashboardPage() {
+    const { user } = useAuth();
+    const router = useRouter();
+
+    React.useEffect(() => {
+        // If user data is loaded and the user is not an admin, redirect them.
+        if (user && user.role !== 'admin') {
+            router.replace('/profile');
+        }
+    }, [user, router]);
+
+    // While user is null (loading), don't render anything or render a loading indicator
+    if (!user) {
+        return (
+             <main className="flex-1 p-4 md:p-8 flex items-center justify-center">
+                <div className="text-center">
+                    <p>Loading...</p>
                 </div>
             </main>
+        )
+    }
+
+    if (user.role !== 'admin') {
+        return (
+             <main className="flex-1 p-4 md:p-8 flex items-center justify-center">
+                <Card className="max-w-md w-full">
+                    <CardHeader className="text-center">
+                        <ShieldAlert className="h-12 w-12 text-destructive mx-auto" />
+                        <CardTitle className="text-2xl">Access Denied</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-center text-muted-foreground">You do not have permission to view this page. You will be redirected shortly.</p>
+                    </CardContent>
+                </Card>
+            </main>
+        )
+    }
+
+    return (
+        <AppLayout>
+            <AdminDashboard />
         </AppLayout>
     );
 }
