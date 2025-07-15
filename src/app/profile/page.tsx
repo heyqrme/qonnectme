@@ -64,33 +64,30 @@ function ProfileContent() {
             <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
                 <div className="w-full">
                     <Card>
-                        <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
-                            <Image src="https://placehold.co/1200x400.png" alt="Cover photo" layout="fill" objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
-                            <div className="relative flex items-end gap-4">
-                                 <div className="relative group">
-                                    <Avatar className="h-24 w-24 border-4 border-background">
-                                        <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
-                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <button
-                                        onClick={() => avatarInputRef.current?.click()}
-                                        className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <Camera className="h-6 w-6 text-white" />
-                                        <span className="sr-only">Upload new avatar</span>
-                                    </button>
-                                    <input
-                                        type="file"
-                                        ref={avatarInputRef}
-                                        onChange={handleAvatarChange}
-                                        className="hidden"
-                                        accept="image/*"
-                                    />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
-                                    <p className="text-sm text-muted-foreground">@{user.username}</p>
-                                </div>
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-6 space-y-4">
+                            <div className="relative group">
+                                <Avatar className="h-28 w-28 border-4 border-background">
+                                    <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
+                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <button
+                                    onClick={() => avatarInputRef.current?.click()}
+                                    className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Camera className="h-8 w-8 text-white" />
+                                    <span className="sr-only">Upload new avatar</span>
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={avatarInputRef}
+                                    onChange={handleAvatarChange}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
+                                <p className="text-sm text-muted-foreground">@{user.username}</p>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
