@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useMusic } from "@/context/music-context";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare } from "lucide-react";
+import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -28,7 +28,7 @@ function ProfileContent() {
         username: "janedoe",
         avatarUrl: "https://placehold.co/128x128.png",
         bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people.",
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=https://qonnect.me/u/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
         profileUrl: "https://qonnect.me/u/janedoe",
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
@@ -75,6 +75,31 @@ function ProfileContent() {
         });
     };
 
+    const handleDownloadQR = async () => {
+        try {
+            const response = await fetch(user.qrCodeUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${user.username}-qonnectme-qr.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            toast({
+                title: "Download Started!",
+                description: "Your QR code is being downloaded.",
+            });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Download Failed",
+                description: "Could not download the QR code image.",
+            });
+        }
+    };
+
     return (
         <main className="flex-1 p-4 md:p-8">
             <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
@@ -83,14 +108,20 @@ function ProfileContent() {
                         <CardHeader className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
                                 {/* QR Code Section */}
-                                <div className="flex flex-col items-center justify-center gap-4 h-full">
+                                <div className="flex flex-col items-center justify-center gap-2 h-full">
                                     <div className="p-2 bg-white rounded-lg shadow-md transform rotate-45">
                                         <Image src={user.qrCodeUrl} alt={`${user.name}'s QR Code`} width={128} height={128} />
                                     </div>
-                                    <Button variant="ghost" size="sm" onClick={handleCopyLink} className="text-muted-foreground">
-                                        <Copy className="mr-2 h-3 w-3" />
-                                        Copy Link
-                                    </Button>
+                                    <div className="flex flex-col gap-1 mt-2">
+                                        <Button variant="ghost" size="sm" onClick={handleCopyLink} className="text-muted-foreground">
+                                            <Copy className="mr-2 h-3 w-3" />
+                                            Copy Link
+                                        </Button>
+                                        <Button variant="ghost" size="sm" onClick={handleDownloadQR} className="text-muted-foreground">
+                                            <Download className="mr-2 h-3 w-3" />
+                                            Download
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 {/* Avatar Section */}
