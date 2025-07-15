@@ -52,7 +52,7 @@ export default function Home() {
     };
   }, []);
 
-  const customQrImageBase64 = "https://i.imgur.com/qL3Qz8G.jpg";
+  const customQrImageBase64 = "https://i.imgur.com/46KNt6c.jpeg";
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative diagonal-lines">
