@@ -3,20 +3,19 @@
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMusic } from "@/context/music-context";
+import { MusicProvider, useMusic } from "@/context/music-context";
 import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
 
-export default function ProfilePage() {
-    const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying, handleDeleteSong } = useMusic();
+function ProfilePageContent() {
+    const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying } = useMusic();
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -165,4 +164,13 @@ export default function ProfilePage() {
             </main>
         </AppLayout>
     );
+}
+
+
+export default function ProfilePage() {
+    return (
+        <MusicProvider>
+            <ProfilePageContent />
+        </MusicProvider>
+    )
 }
