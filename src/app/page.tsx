@@ -52,7 +52,7 @@ export default function Home() {
     };
   }, []);
 
-  const customQrImageBase64 = "https://placehold.co/200x200.png";
+  const customQrImageBase64 = "https://i.imgur.com/qL3Qz8G.jpg";
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative diagonal-lines">
