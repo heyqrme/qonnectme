@@ -1,4 +1,6 @@
 
+'use client';
+
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -6,9 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { UserCheck, UserPlus, UserX } from "lucide-react";
+import React from "react";
 
 export default function FriendsPage() {
+    const { toast } = useToast();
+    const addFriendInputRef = React.useRef<HTMLInputElement>(null);
+
     const friends = [
         { id: 1, name: "Alex Ray", username: "alexray", avatarUrl: "https://placehold.co/40x40.png" },
         { id: 2, name: "Jordan Lee", username: "jordanlee", avatarUrl: "https://placehold.co/40x40.png" },
@@ -20,6 +27,24 @@ export default function FriendsPage() {
         { id: 6, name: "Drew Chen", username: "drewchen", avatarUrl: "https://placehold.co/40x40.png" },
     ];
 
+    const handleSendRequest = (e: React.FormEvent) => {
+        e.preventDefault();
+        const input = addFriendInputRef.current;
+        if (input && input.value.trim() !== "") {
+            toast({
+                title: "Request Sent!",
+                description: `Your friend request to ${input.value} has been sent.`,
+            });
+            input.value = "";
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Oops!",
+                description: "Please enter a username or email to send a request.",
+            });
+        }
+    }
+
     return (
         <AppLayout>
             <main className="flex-1 p-4 md:p-8">
@@ -29,9 +54,10 @@ export default function FriendsPage() {
                         <CardDescription>Manage your friends and connection requests.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="requests">
+                        <Tabs defaultValue="add">
                             <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="friends">Friends ({friends.length})</TabsTrigger>
+
                                 <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
                                 <TabsTrigger value="add">Add Friend</TabsTrigger>
                             </TabsList>
@@ -73,15 +99,15 @@ export default function FriendsPage() {
                                 </div>
                             </TabsContent>
                              <TabsContent value="add" className="mt-4">
-                                <div className="space-y-4">
+                                <form onSubmit={handleSendRequest} className="space-y-4">
                                     <div>
                                         <Label htmlFor="add-friend-input">Username or Email</Label>
                                         <div className="flex gap-2 mt-1">
-                                            <Input id="add-friend-input" placeholder="e.g., alexray or alex@example.com" />
-                                            <Button><UserPlus className="mr-2 h-4 w-4" /> Send Request</Button>
+                                            <Input id="add-friend-input" ref={addFriendInputRef} placeholder="e.g., alexray or alex@example.com" />
+                                            <Button type="submit"><UserPlus className="mr-2 h-4 w-4" /> Send Request</Button>
                                         </div>
                                     </div>
-                                </div>
+                                </form>
                             </TabsContent>
                         </Tabs>
                     </CardContent>
