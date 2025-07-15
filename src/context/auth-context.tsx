@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
 
     const login = (email: string, password: string) => {
-        if (email === 'admin@qonnectme.com' && password === 'admin') {
+        if (email === 'admin@qonnectme.com' && password === '1#cocacola') {
             setUser({ email, role: 'admin' });
         } else {
             // For any other login, treat as a regular user for this prototype
