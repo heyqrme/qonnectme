@@ -28,8 +28,8 @@ function ProfileContent() {
         username: "janedoe",
         avatarUrl: "https://placehold.co/128x128.png",
         bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people.",
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=https://qonnect.me/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
-        profileUrl: "https://qonnect.me/janedoe",
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=https://qonnect.me/u/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
+        profileUrl: "https://qonnect.me/u/janedoe",
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
         posts: [
