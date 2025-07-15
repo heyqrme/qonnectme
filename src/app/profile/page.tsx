@@ -4,12 +4,13 @@
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMusic } from "@/context/music-context";
-import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload, Camera } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload, Camera, Copy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -19,13 +20,15 @@ function ProfileContent() {
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const avatarInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
     const user = {
         name: "Jane Doe",
         username: "janedoe",
         avatarUrl: "https://placehold.co/128x128.png",
-        bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people. Let's create something beautiful together.",
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qonnect.me/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
+        bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people.",
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=https://qonnect.me/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
+        profileUrl: "https://qonnect.me/janedoe",
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
     };
@@ -58,46 +61,71 @@ function ProfileContent() {
             reader.readAsDataURL(file);
         }
     };
+    
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(user.profileUrl);
+        toast({
+            title: "Copied to clipboard!",
+            description: "Your profile link has been copied.",
+        });
+    };
 
     return (
         <main className="flex-1 p-4 md:p-8">
             <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
                 <div className="w-full">
                     <Card>
-                        <CardHeader className="flex flex-col items-center justify-center text-center p-6 space-y-4">
-                            <div className="relative group">
-                                <Avatar className="h-28 w-28 border-4 border-background">
-                                    <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <button
-                                    onClick={() => avatarInputRef.current?.click()}
-                                    className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <Camera className="h-8 w-8 text-white" />
-                                    <span className="sr-only">Upload new avatar</span>
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={avatarInputRef}
-                                    onChange={handleAvatarChange}
-                                    className="hidden"
-                                    accept="image/*"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
-                                <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        <CardHeader className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
+                                {/* QR Code Section */}
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="p-2 bg-white rounded-lg shadow-md">
+                                        <Image src={user.qrCodeUrl} alt={`${user.name}'s QR Code`} width={128} height={128} />
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={handleCopyLink} className="text-muted-foreground">
+                                        <Copy className="mr-2 h-3 w-3" />
+                                        Copy Link
+                                    </Button>
+                                </div>
+
+                                {/* Avatar Section */}
+                                <div className="flex flex-col items-center order-first md:order-none">
+                                    <div className="relative group">
+                                        <Avatar className="h-32 w-32 border-4 border-background">
+                                            <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
+                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <button
+                                            onClick={() => avatarInputRef.current?.click()}
+                                            className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <Camera className="h-8 w-8 text-white" />
+                                            <span className="sr-only">Upload new avatar</span>
+                                        </button>
+                                        <input
+                                            type="file"
+                                            ref={avatarInputRef}
+                                            onChange={handleAvatarChange}
+                                            className="hidden"
+                                            accept="image/*"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {/* User Info Section */}
+                                <div className="flex flex-col items-center md:items-start gap-2">
+                                     <div className="space-y-1 text-center md:text-left">
+                                        <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
+                                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground max-w-xs">{user.bio}</p>
+                                    <Button asChild variant="outline" size="sm" className="mt-2">
+                                        <Link href="/profile/edit"><Edit className="mr-2 h-4 w-4"/> Edit Profile</Link>
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <div className="flex justify-between items-start flex-wrap gap-4 mb-6">
-                            <p className="max-w-prose text-muted-foreground flex-1">{user.bio}</p>
-                            <Button asChild variant="outline" size="sm">
-                                    <Link href="/profile/edit"><Edit className="mr-2 h-4 w-4"/> Edit Profile</Link>
-                            </Button>
-                            </div>
-
                             <Tabs defaultValue="photos">
                                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                                     <TabsTrigger value="photos"><ImageIcon className="mr-2 h-4 w-4" /> Photos</TabsTrigger>
@@ -180,7 +208,7 @@ function ProfileContent() {
                                     </div>
                                     <h3 className="font-semibold">Your Unique Qonnectme Code</h3>
                                     <p className="text-muted-foreground max-w-xs">Share this with friends to connect instantly. You can also buy merchandise with your code in our store!</p>
-                                    <Button>Share Code</Button>
+                                    <Button onClick={handleCopyLink}>Share Code</Button>
                                 </TabsContent>
                             </Tabs>
                         </CardContent>
