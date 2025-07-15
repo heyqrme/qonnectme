@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users, Shield, Sun, Moon } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Edit, Rss, Bell, Home, Users, Shield, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
