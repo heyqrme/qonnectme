@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,22 +18,23 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const navLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/activity", label: "Activity", icon: Rss },
+  { href: "/friends", label: "Friends", icon: Users },
   { href: "/store", label: "Shop", icon: Store },
-  { href: "/cart", label: "Cart", icon: ShoppingCart },
-  { href: "/", label: "Logout", icon: LogOut },
 ];
 
 export function AppHeader() {
   const pathname = usePathname();
 
-  const NavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
+  const NavLink = ({ href, children, className }: { href: string, children: React.ReactNode, className?: string }) => (
     <Link
       href={href}
       className={cn(
         "transition-colors hover:text-foreground",
-        pathname === href ? "text-foreground font-semibold" : "text-muted-foreground"
+        pathname === href ? "text-foreground font-semibold" : "text-muted-foreground",
+        className
       )}
       prefetch={false}
     >
@@ -43,11 +44,11 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
-      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold md:text-base" prefetch={false}>
-          <QrCode className="h-6 w-6 text-primary" />
-          <span className="font-headline">Qonnectme</span>
-        </Link>
+      <Link href="/dashboard" className="flex items-center gap-2 font-semibold" prefetch={false}>
+        <QrCode className="h-6 w-6 text-primary" />
+        <span className="font-headline text-lg">Qonnectme</span>
+      </Link>
+      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6 ml-6">
         {navLinks.map(link => (
           <NavLink key={link.href} href={link.href}>{link.label}</NavLink>
         ))}
@@ -65,11 +66,12 @@ export function AppHeader() {
               <QrCode className="h-6 w-6 text-primary" />
               <span className="font-headline">Qonnectme</span>
             </Link>
-             <NavLink href="/dashboard">Dashboard</NavLink>
             {navLinks.map(link => (
-              <NavLink key={link.href} href={link.href}>{link.label}</NavLink>
+               <NavLink key={link.href} href={link.href} className="flex items-center gap-4">
+                <link.icon className="h-5 w-5" />
+                {link.label}
+              </NavLink>
             ))}
-             <NavLink href="/friends">Friends</NavLink>
           </nav>
         </SheetContent>
       </Sheet>
