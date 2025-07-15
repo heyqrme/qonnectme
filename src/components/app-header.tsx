@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users, Shield } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users, Shield, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useTheme } from "next-themes";
 
 const navLinks = [
   { href: "/profile", label: "Profile", icon: User },
@@ -26,6 +27,7 @@ const navLinks = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const { setTheme, theme } = useTheme();
 
   const NavLink = ({ href, children, className }: { href: string, children: React.ReactNode, className?: string }) => (
     <Link
@@ -76,6 +78,11 @@ export function AppHeader() {
       </Sheet>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial" />
+        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
         <Button asChild variant="ghost" size="icon">
             <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
