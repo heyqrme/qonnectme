@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMusic } from "@/context/music-context";
-import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload } from "lucide-react";
+import { Edit, Music, QrCode, Video, Image as ImageIcon, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -18,6 +18,7 @@ function ProfileContent() {
     const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying } = useMusic();
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     const user = {
         name: "Jane Doe",
@@ -28,6 +29,8 @@ function ProfileContent() {
         photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
         videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
     };
+    
+    const [avatarPreview, setAvatarPreview] = useState<string>(user.avatarUrl);
 
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -45,6 +48,17 @@ function ProfileContent() {
         }
     };
 
+    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <main className="flex-1 p-4 md:p-8">
             <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
@@ -53,10 +67,26 @@ function ProfileContent() {
                         <CardHeader className="relative h-48 bg-secondary rounded-t-lg flex items-end p-4">
                             <Image src="https://placehold.co/1200x400.png" alt="Cover photo" layout="fill" objectFit="cover" className="rounded-t-lg" data-ai-hint="abstract purple" />
                             <div className="relative flex items-end gap-4">
-                                <Avatar className="h-24 w-24 border-4 border-background">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
+                                 <div className="relative group">
+                                    <Avatar className="h-24 w-24 border-4 border-background">
+                                        <AvatarImage src={avatarPreview} alt={user.name} data-ai-hint="female portrait" />
+                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <button
+                                        onClick={() => avatarInputRef.current?.click()}
+                                        className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <Camera className="h-6 w-6 text-white" />
+                                        <span className="sr-only">Upload new avatar</span>
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={avatarInputRef}
+                                        onChange={handleAvatarChange}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                </div>
                                 <div>
                                     <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
                                     <p className="text-sm text-muted-foreground">@{user.username}</p>
