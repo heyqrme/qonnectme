@@ -35,12 +35,13 @@ export default function EditProfilePage() {
                         </CardContent>
                     </Card>
 
-                    <ThemeSuggester />
-
-                     <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2">
                         <Button variant="outline">Cancel</Button>
                         <Button>Save Changes</Button>
                     </div>
+
+                    <ThemeSuggester />
+
                 </div>
             </main>
         </AppLayout>
