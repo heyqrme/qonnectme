@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users } from "lucide-react";
+import { QrCode, User, ShoppingCart, Store, Menu, LogOut, Settings, Rss, Bell, Home, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -98,6 +98,7 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild><Link href="/profile" className="flex items-center"><User className="mr-2 h-4 w-4" />Profile</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link href="/profile/edit" className="flex items-center"><Settings className="mr-2 h-4 w-4" />Settings</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild><Link href="/admin" className="flex items-center"><Shield className="mr-2 h-4 w-4" />Admin</Link></DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/" className="flex items-center"><LogOut className="mr-2 h-4 w-4" />Logout</Link>
