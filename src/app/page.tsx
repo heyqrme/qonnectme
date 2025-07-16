@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from "react";
@@ -36,12 +37,15 @@ export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [hoverQR, setHoverQR] = useState(false);
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   // This would be replaced by your app's user state
   const user = null; 
 
   // Track mouse movement for dynamic lighting effects
   useEffect(() => {
+    setMounted(true);
+    
     const handleMouseMove = (e) => {
       setMousePosition({
         x: e.clientX,
@@ -57,13 +61,15 @@ export default function Home() {
 
   const customQrImageBase64 = "https://i.imgur.com/46KNt6c.png";
 
+  const isDark = mounted && theme === 'dark';
+
   return (
     <div className={cn(
       "min-h-screen text-white overflow-hidden relative",
-      theme === 'dark' ? 'bg-black diagonal-lines' : 'bg-white'
+      isDark ? 'bg-black diagonal-lines' : 'bg-white'
       )}>
       
-      {theme === 'dark' && (
+      {isDark && (
         <>
           {/* Dynamic lighting effects that follow mouse movement */}
           <div className="absolute inset-0 overflow-hidden">
@@ -150,12 +156,12 @@ export default function Home() {
               <Logo size="large" withText={false} className="mr-4" />
               <h1 className={cn(
                 "text-5xl md:text-7xl font-bold",
-                theme === 'dark' ? "bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 neo-glow glow-text" : "text-black"
+                isDark ? "bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 neo-glow glow-text" : "text-black"
               )}>
                 Qonnectme
               </h1>
             </div>
-            <p className={cn("text-xl md:text-2xl font-light mb-8 max-w-2xl mx-auto", theme === 'dark' ? 'text-gray-300' : 'text-gray-600')}>
+            <p className={cn("text-xl md:text-2xl font-light mb-8 max-w-2xl mx-auto", isDark ? 'text-gray-300' : 'text-gray-600')}>
               Connect with friends in a whole new way. Your identity, your style, your QR code.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
@@ -177,8 +183,8 @@ export default function Home() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full mt-16"
           >
-            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", theme === 'dark' ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
-              {theme === 'dark' && <>
+            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", isDark ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
+              {isDark && <>
                 <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-purple-500/20 rounded-full filter blur-xl group-hover:bg-purple-500/30 transition-all duration-300"></div>
                 <motion.div 
@@ -188,12 +194,12 @@ export default function Home() {
                 />
               </>
               }
-              <h3 className={cn("text-xl font-bold mb-3", theme === 'dark' ? 'neon-text-purple' : 'text-primary')}>Get Your Identity</h3>
-              <p className={cn(theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>Sign up and receive your unique QR code that represents you in the Qonnectme community.</p>
+              <h3 className={cn("text-xl font-bold mb-3", isDark ? 'neon-text-purple' : 'text-primary')}>Get Your Identity</h3>
+              <p className={cn(isDark ? 'text-gray-400' : 'text-gray-600')}>Sign up and receive your unique QR code that represents you in the Qonnectme community.</p>
             </div>
 
-            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", theme === 'dark' ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
-              {theme === 'dark' && <>
+            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", isDark ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
+              {isDark && <>
                 <div className="absolute inset-0 bg-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-pink-500/20 rounded-full filter blur-xl group-hover:bg-pink-500/30 transition-all duration-300"></div>
                 <motion.div 
@@ -202,12 +208,12 @@ export default function Home() {
                   className="absolute -top-2 -left-2 w-16 h-16 bg-pink-500/10 rounded-full filter blur-lg"
                 />
               </>}
-              <h3 className={cn("text-xl font-bold mb-3", theme === 'dark' ? 'neon-text-pink' : 'text-primary')}>Connect with Friends</h3>
-              <p className={cn(theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>Scan QR codes to instantly connect with other members and build your social network.</p>
+              <h3 className={cn("text-xl font-bold mb-3", isDark ? 'neon-text-pink' : 'text-primary')}>Connect with Friends</h3>
+              <p className={cn(isDark ? 'text-gray-400' : 'text-gray-600')}>Scan QR codes to instantly connect with other members and build your social network.</p>
             </div>
 
-            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", theme === 'dark' ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
-              {theme === 'dark' && <>
+            <div className={cn("p-6 rounded-xl relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300", isDark ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
+              {isDark && <>
                 <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-blue-500/20 rounded-full filter blur-xl group-hover:bg-blue-500/30 transition-all duration-300"></div>
                 <motion.div 
@@ -216,8 +222,8 @@ export default function Home() {
                   className="absolute -top-2 -left-2 w-16 h-16 bg-blue-500/10 rounded-full filter blur-lg"
                 />
               </>}
-              <h3 className={cn("text-xl font-bold mb-3", theme === 'dark' ? 'neon-text-blue' : 'text-primary')}>Wear Your Code</h3>
-              <p className={cn(theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>Shop exclusive products featuring your personal QR code and showcase your digital identity.</p>
+              <h3 className={cn("text-xl font-bold mb-3", isDark ? 'neon-text-blue' : 'text-primary')}>Wear Your Code</h3>
+              <p className={cn(isDark ? 'text-gray-400' : 'text-gray-600')}>Shop exclusive products featuring your personal QR code and showcase your digital identity.</p>
             </div>
           </motion.div>
 
@@ -228,15 +234,15 @@ export default function Home() {
             transition={{ delay: 0.8, duration: 0.6 }}
             className="mt-24 max-w-5xl w-full"
           >
-            <div className={cn("p-8 rounded-xl relative overflow-hidden", theme === 'dark' ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
+            <div className={cn("p-8 rounded-xl relative overflow-hidden", isDark ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-nightlife' : 'bg-gray-100/80 border')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
-                  <h2 className={cn("text-3xl font-bold mb-4", theme === 'dark' ? 'text-white neo-glow glow-text' : 'text-black')}>Your Social Identity</h2>
-                  <p className={cn("mb-6", theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>
+                  <h2 className={cn("text-3xl font-bold mb-4", isDark ? 'text-white neo-glow glow-text' : 'text-black')}>Your Social Identity</h2>
+                  <p className={cn("mb-6", isDark ? 'text-gray-400' : 'text-gray-600')}>
                     Your QR code is more than just a pattern – it's your digital identity.
                     Wear it, share it, and connect instantly with new friends.
                   </p>
-                  <ul className={cn("space-y-2", theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>
+                  <ul className={cn("space-y-2", isDark ? 'text-gray-400' : 'text-gray-600')}>
                     <li className="flex items-center">
                       <span className="inline-block w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
                       Each code is uniquely generated for you
@@ -257,7 +263,7 @@ export default function Home() {
                     onMouseEnter={() => setHoverQR(true)} 
                     onMouseLeave={() => setHoverQR(false)}
                   >
-                    {theme === 'dark' && <>
+                    {isDark && <>
                       {/* Animated radial rings around QR */}
                       <div className="absolute inset-0 -m-12 pointer-events-none">
                         <div className={`absolute inset-0 rounded-full bg-purple-500/10 transition-all duration-500 ${hoverQR ? 'scale-110 opacity-70' : 'scale-100 opacity-40'}`} style={{ animation: 'pulse-slow 3s infinite' }}></div>
@@ -268,9 +274,9 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-lg filter blur-md opacity-50 -m-1 animated-gradient"></div>
                     </>}
                     <motion.div
-                      animate={theme === 'dark' ? { rotate: [3, -3, 3], y: [0, -10, 0] } : {}}
+                      animate={isDark ? { rotate: [3, -3, 3], y: [0, -10, 0] } : {}}
                       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                      className={cn("p-4 rounded-lg relative transition-all duration-300", theme === 'dark' ? `bg-black ${hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]'}` : 'bg-white shadow-lg')}
+                      className={cn("p-4 rounded-lg relative transition-all duration-300", isDark ? `bg-black ${hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]'}` : 'bg-white shadow-lg')}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -279,12 +285,12 @@ export default function Home() {
                         alt="Demo QR Code"
                         width={200} 
                         height={200}
-                        className={cn("mx-auto transition-all duration-300 rounded-md", theme === 'dark' && hoverQR ? 'qr-pulse scale-105' : '')}
+                        className={cn("mx-auto transition-all duration-300 rounded-md", isDark && hoverQR ? 'qr-pulse scale-105' : '')}
                         data-ai-hint="qr code"
                       />
-                      <p className={cn("text-center mt-2 text-sm", theme === 'dark' ? 'text-gray-400' : 'text-gray-500')}>   Scan Me I like you</p>
+                      <p className={cn("text-center mt-2 text-sm", isDark ? 'text-gray-400' : 'text-gray-500')}>   Scan Me I like you</p>
                       
-                      {theme === 'dark' && <>
+                      {isDark && <>
                         {/* Decorative corner elements for QR code */}
                         <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-purple-500 opacity-80"></div>
                         <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-pink-500 opacity-80"></div>
@@ -305,10 +311,10 @@ export default function Home() {
             transition={{ delay: 1.2, duration: 0.6 }}
             className="mt-24 text-center max-w-3xl"
           >
-            <h2 className={cn("text-3xl md:text-4xl font-bold mb-6", theme === 'dark' ? "bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 neo-glow glow-text" : "text-black")}>
+            <h2 className={cn("text-3xl md:text-4xl font-bold mb-6", isDark ? "bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 neo-glow glow-text" : "text-black")}>
               Ready to join the community?
             </h2>
-            <p className={cn("mb-8", theme === 'dark' ? 'text-gray-400' : 'text-gray-600')}>
+            <p className={cn("mb-8", isDark ? 'text-gray-400' : 'text-gray-600')}>
               Create your account, get your unique QR code, and start connecting with friends in an exciting new way.
             </p>
             <CustomButton href="/signup" className="py-4 px-10 text-xl relative overflow-hidden group">
@@ -321,8 +327,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className={cn("relative z-10 border-t", theme === 'dark' ? 'bg-black/40 backdrop-blur-sm border-gray-800' : 'bg-gray-50 border-gray-200', 'py-8')}>
-        {theme === 'dark' && (
+      <footer className={cn("relative z-10 border-t", isDark ? 'bg-black/40 backdrop-blur-sm border-gray-800' : 'bg-gray-50 border-gray-200', 'py-8')}>
+        {isDark && (
           <div className="absolute top-0 -translate-y-full right-10 flex items-end space-x-1 h-16">
             <div className="equalizer-bar h-5"></div>
             <div className="equalizer-bar h-8"></div>
