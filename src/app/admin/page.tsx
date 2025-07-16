@@ -6,13 +6,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import { MoreHorizontal, Trash2, Eye, Edit, PlusCircle, ShieldAlert } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 
 const users = [
     {
@@ -62,7 +73,7 @@ const users = [
     }
 ];
 
-const products = [
+const initialProducts = [
     { id: 1, name: "QR Code T-Shirt", price: 29.99, image: "https://placehold.co/100x100.png", hint: "tshirt mockup" },
     { id: 2, name: "QR Code Hoodie", price: 49.99, image: "https://placehold.co/100x100.png", hint: "hoodie mockup" },
     { id: 3, name: "QR Code Mug", price: 15.99, image: "https://placehold.co/100x100.png", hint: "mug mockup" },
@@ -71,7 +82,85 @@ const products = [
     { id: 6, name: "QR Code Cap", price: 22.99, image: "https://placehold.co/100x100.png", hint: "cap mockup" },
 ];
 
+type Product = typeof initialProducts[0];
+
+function EditProductDialog({ product, open, onOpenChange, onSave }: { product: Product | null, open: boolean, onOpenChange: (open: boolean) => void, onSave: (updatedProduct: Product) => void }) {
+    const [editedProduct, setEditedProduct] = useState<Product | null>(product);
+
+    React.useEffect(() => {
+        setEditedProduct(product);
+    }, [product]);
+
+    if (!editedProduct) return null;
+
+    const handleSave = () => {
+        onSave(editedProduct);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Product</DialogTitle>
+                    <DialogDescription>
+                        Make changes to the product details. Click save when you're done.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                            Name
+                        </Label>
+                        <Input
+                            id="name"
+                            value={editedProduct.name}
+                            onChange={(e) => setEditedProduct({ ...editedProduct, name: e.target.value })}
+                            className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="price" className="text-right">
+                            Price
+                        </Label>
+                        <Input
+                            id="price"
+                            type="number"
+                            value={editedProduct.price}
+                            onChange={(e) => setEditedProduct({ ...editedProduct, price: parseFloat(e.target.value) || 0 })}
+                            className="col-span-3"
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button onClick={handleSave}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function AdminDashboard() {
+    const [products, setProducts] = useState(initialProducts);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const { toast } = useToast();
+
+    const handleEditClick = (product: Product) => {
+        setSelectedProduct(product);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleSaveProduct = (updatedProduct: Product) => {
+        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+        setIsEditDialogOpen(false);
+        setSelectedProduct(null);
+        toast({
+            title: "Product Updated",
+            description: `${updatedProduct.name} has been saved.`,
+        });
+    };
+
     return (
         <main className="flex-1 p-4 md:p-8">
             <div className="max-w-6xl mx-auto grid gap-8">
@@ -188,7 +277,10 @@ function AdminDashboard() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem className="flex items-center gap-2"><Edit className="h-4 w-4" />Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleEditClick(product)}>
+                                                        <Edit className="h-4 w-4" />
+                                                        Edit
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive"><Trash2 className="h-4 w-4" />Delete</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -200,6 +292,12 @@ function AdminDashboard() {
                     </CardContent>
                 </Card>
             </div>
+            <EditProductDialog 
+                product={selectedProduct}
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                onSave={handleSaveProduct}
+            />
         </main>
     )
 }
