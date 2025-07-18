@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
         config.watchOptions = {
             poll: 1000,
             aggregateTimeout: 200,
+            ignored: ['**/.next/**'],
         };
     }
     return config;
