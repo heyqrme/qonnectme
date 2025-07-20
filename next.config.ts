@@ -38,6 +38,9 @@ const nextConfig: NextConfig = {
             ignored: ['**/.next/**'],
         };
     }
+    config.infrastructureLogging = {
+      level: 'error',
+    };
     return config;
   },
 };
