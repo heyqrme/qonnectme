@@ -49,7 +49,7 @@ export function AppHeader() {
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
       <Link href="/profile" className="flex items-center gap-2 font-semibold" prefetch={false}>
         <QrCode className="h-6 w-6 text-primary" />
-        <span className="font-headline text-lg">Qonnectme</span>
+        <span className="font-headline text-lg">Qonnectme v3</span>
       </Link>
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6 ml-6">
         {navLinks.map(link => (
@@ -67,7 +67,7 @@ export function AppHeader() {
           <nav className="grid gap-6 text-lg font-medium">
             <Link href="/profile" className="flex items-center gap-2 text-lg font-semibold mb-4" prefetch={false}>
               <QrCode className="h-6 w-6 text-primary" />
-              <span className="font-headline">Qonnectme</span>
+              <span className="font-headline">Qonnectme v3</span>
             </Link>
             {navLinks.map(link => (
                <NavLink key={link.href} href={link.href} className="flex items-center gap-4">
