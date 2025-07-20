@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
-  title: 'Qonnectme v2',
+  title: 'Qonnectme v3',
   description: 'Your digital identity, connected.',
 };
 
