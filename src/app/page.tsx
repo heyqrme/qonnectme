@@ -158,7 +158,7 @@ export default function Home() {
                 "text-5xl md:text-7xl font-bold",
                 isDark ? "bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 neo-glow glow-text" : "text-black"
               )}>
-                Qonnectme
+                Qonnectme v3
               </h1>
             </div>
             <p className={cn("text-xl md:text-2xl font-light mb-8 max-w-2xl mx-auto", isDark ? 'text-gray-300' : 'text-gray-600')}>
@@ -346,3 +346,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
