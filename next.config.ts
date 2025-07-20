@@ -31,13 +31,6 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
-    if (!isServer) {
-        config.watchOptions = {
-            poll: 1000,
-            aggregateTimeout: 200,
-            ignored: ['**/.next/**'],
-        };
-    }
     config.infrastructureLogging = {
       level: 'error',
     };
