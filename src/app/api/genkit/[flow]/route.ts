@@ -1,10 +1,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
-import { Flow } from 'genkit';
 
 // A map of available flows to prevent arbitrary code execution
-const availableFlows: { [key: string]: () => Promise<{ default: Flow<any, any, any> } | any> } = {
+const availableFlows: { [key: string]: () => Promise<any> } = {
   'suggest-profile-theme': () => import('@/ai/flows/suggest-profile-theme'),
 };
 
@@ -20,13 +19,10 @@ export async function POST(
 
   try {
     const body = await req.json();
-
-    // Dynamically import the flow function.
-    // In this project, the exported function we want to call is the flow name itself in camelCase.
-    // e.g., suggest-profile-theme flow is called with suggestProfileTheme function
+    
     const flowModule = await availableFlows[flowName]();
     
-    // Convert kebab-case flow name to camelCase for the function call
+    // Convert kebab-case flow name (from URL) to camelCase function name
     const functionName = flowName.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 
     const flowFunction = flowModule[functionName];
@@ -41,7 +37,6 @@ export async function POST(
     return NextResponse.json(result);
   } catch (err: any) {
     console.error(`Error executing flow ${flowName}:`, err);
-    // Try to parse Zod errors for better client-side feedback
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: err.errors }, { status: 400 });
     }
