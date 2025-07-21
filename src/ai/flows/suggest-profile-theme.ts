@@ -8,8 +8,9 @@
  * - SuggestProfileThemeOutput - The return type for the suggestProfileTheme function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {defineFlow, generate} from 'genkit';
+import {z} from 'zod';
+import {geminiPro} from 'genkitx/googleai';
 
 const SuggestProfileThemeInputSchema = z.object({
   musicTaste: z.string().describe('The user music taste, expressed as list of artists and genres.'),
@@ -28,30 +29,26 @@ export async function suggestProfileTheme(input: SuggestProfileThemeInput): Prom
   return suggestProfileThemeFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'suggestProfileThemePrompt',
-  input: {schema: SuggestProfileThemeInputSchema},
-  output: {schema: SuggestProfileThemeOutputSchema},
-  prompt: `You are a profile theming expert with great taste.
-
-Based on the user's music taste and media content, suggest a profile theme, a profile style and a color palette to match.
-
-Music taste: {{{musicTaste}}}
-Media description: {{{mediaDescription}}}
-
-Theme suggestion: 
-Style suggestion: 
-Color Palette (as comma separated list of hex color codes): `,
-});
-
-const suggestProfileThemeFlow = ai.defineFlow(
+const suggestProfileThemeFlow = defineFlow(
   {
     name: 'suggestProfileThemeFlow',
     inputSchema: SuggestProfileThemeInputSchema,
     outputSchema: SuggestProfileThemeOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const llmResponse = await generate({
+      model: geminiPro,
+      prompt: `You are a profile theming expert with great taste.
+
+Based on the user's music taste and media content, suggest a profile theme, a profile style and a color palette to match.
+
+Music taste: ${input.musicTaste}
+Media description: ${input.mediaDescription}`,
+      output: {
+        schema: SuggestProfileThemeOutputSchema,
+      },
+    });
+
+    return llmResponse.output()!;
   }
 );
