@@ -37,11 +37,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     const [currentSongIndex, setCurrentSongIndex] = useState<number | null>(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
-    const isPlayingRef = useRef(isPlaying);
-
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
 
     const handlePlayPause = (index?: number) => {
         const targetIndex = index ?? currentSongIndex;
@@ -80,27 +75,21 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     const handleDeleteSong = (id: number) => {
         const newSongs = songs.filter(song => song.id !== id);
         
-        let shouldPlay = isPlaying;
         if (currentSongIndex !== null && songs[currentSongIndex]?.id === id) {
              if (audioRef.current) {
                 audioRef.current.pause();
+                audioRef.current.src = "";
              }
             if (newSongs.length === 0) {
                 setCurrentSongIndex(null);
                 setIsPlaying(false);
-                if (audioRef.current) audioRef.current.src = "";
-                return;
             } else {
                  const newIndex = currentSongIndex % newSongs.length;
                  setCurrentSongIndex(newIndex);
-                 if (!isPlaying) shouldPlay = false; // Don't start playing if it was paused
+                 // isPlaying will be handled by the useEffect below
             }
         }
-
         setSongs(newSongs);
-        if (shouldPlay) {
-             setIsPlaying(true);
-        }
     };
 
     const handleUploadSong = (file: File) => {
@@ -116,38 +105,25 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
-    
-        const handleCanPlayThrough = () => {
-          if (isPlayingRef.current) {
-            audio.play().catch(e => {
-                console.error("Audio play failed on load:", e);
-                setIsPlaying(false);
-            });
-          }
-        };
-    
-        audio.addEventListener('canplaythrough', handleCanPlayThrough);
-    
-        return () => {
-          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-        };
-      }, []);
-    
 
-    useEffect(() => {
-        const audio = audioRef.current;
-        if (audio && currentSongIndex !== null && songs[currentSongIndex]) {
+        if (currentSongIndex !== null && songs[currentSongIndex]) {
             const song = songs[currentSongIndex];
             if (audio.src !== song.url) {
                 audio.src = song.url;
                 audio.load();
             }
-        } else if (audio) {
+
+            if (isPlaying) {
+                audio.play().catch(e => console.error("Audio play failed on change:", e));
+            } else {
+                audio.pause();
+            }
+        } else {
             audio.pause();
             audio.src = "";
             setIsPlaying(false);
         }
-    }, [currentSongIndex, songs]);
+    }, [currentSongIndex, songs, isPlaying]);
 
 
     const value = {
