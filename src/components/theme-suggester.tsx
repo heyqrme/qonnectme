@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wand2, Loader2 } from 'lucide-react';
 import type { SuggestProfileThemeOutput } from '@/ai/flows/suggest-profile-theme';
+import { suggestProfileTheme } from '@/ai/flows/suggest-profile-theme';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
@@ -35,15 +36,7 @@ export function ThemeSuggester() {
     setIsLoading(true);
     setSuggestion(null);
     try {
-      const response = await fetch('/api/genkit/suggestProfileThemeFlow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to get theme suggestion.');
-      }
-      const data = await response.json();
+      const data = await suggestProfileTheme(values);
       setSuggestion(data);
     } catch (error) {
       console.error(error);

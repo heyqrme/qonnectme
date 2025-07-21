@@ -1,4 +1,4 @@
-import { nextHandler } from '@genkit-ai/next';
+import {createApiHandler} from '@genkit-ai/next/api';
 import '@/ai/flows/suggest-profile-theme';
 
-export const { GET, POST } = nextHandler();
+export const {GET, POST} = createApiHandler();
