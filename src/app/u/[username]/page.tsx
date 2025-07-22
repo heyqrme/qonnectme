@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 
+// Correct type definition for Next.js App Router page props
 type PageProps = {
     params: { username: string };
 };

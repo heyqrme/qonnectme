@@ -13,6 +13,7 @@ export async function POST(
 ) {
   const { flow: flowName } = params;
 
+  // Security: Ensure the requested flow is in our allowlist
   if (!availableFlows[flowName]) {
     return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
   }
@@ -20,6 +21,7 @@ export async function POST(
   try {
     const body = await req.json();
     
+    // Dynamically import the specific flow module
     const flowModule = await availableFlows[flowName]();
     
     // Convert kebab-case flow name (from URL) to camelCase function name
@@ -37,6 +39,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (err: any) {
     console.error(`Error executing flow ${flowName}:`, err);
+    // Provide more specific feedback for validation errors
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: err.errors }, { status: 400 });
     }
