@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
-import type { Flow } from 'genkit';
 
 // A map of available flows to prevent arbitrary code execution
 const availableFlows: { [key: string]: () => Promise<any> } = {
@@ -21,17 +20,17 @@ export async function POST(
 
   try {
     const body = await req.json();
-
+    
     // Dynamically import the specific flow module
     const flowModule = await availableFlows[flowName]();
-
+    
     // Convert kebab-case flow name (from URL) to camelCase function name
     const functionName = flowName.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 
     const flowFunction = flowModule[functionName];
 
     if (typeof flowFunction !== 'function') {
-      return NextResponse.json({ error: `Function ${functionName} not found in module` }, { status: 500 });
+        return NextResponse.json({ error: `Function ${functionName} not found in module` }, { status: 500 });
     }
 
     // Execute the flow with the request body
