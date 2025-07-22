@@ -12,6 +12,7 @@ import React from "react";
 // Correct type definition for Next.js App Router page props
 type PublicProfilePageProps = {
     params: { username: string };
+    searchParams: { [key: string]: string | string[] | undefined };
 };
 
 // This is a placeholder for fetching user data and checking auth status
