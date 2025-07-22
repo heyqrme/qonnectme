@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import React from "react";
 
 // Correct type definition for Next.js App Router page props
-type PageProps = {
+type PublicProfilePageProps = {
     params: { username: string };
+    searchParams: { [key: string]: string | string[] | undefined };
 };
 
 // This is a placeholder for fetching user data and checking auth status
@@ -46,7 +47,7 @@ const useIsRegisteredUser = () => {
 };
 
 
-export default function PublicProfilePage({ params }: PageProps) {
+export default function PublicProfilePage({ params }: PublicProfilePageProps) {
     const [user, setUser] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
     const isRegisteredUser = useIsRegisteredUser();

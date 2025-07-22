@@ -1,4 +1,6 @@
 
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
 
@@ -14,13 +16,13 @@ export async function POST(
   const { flow: flowName } = params;
 
   // Security: Ensure the requested flow is in our allowlist
-  if (!availableFlows[flowName]) {
+  if (!Object.keys(availableFlows).includes(flowName)) {
     return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
   }
 
   try {
     const body = await req.json();
-    
+
     // Dynamically import the specific flow module
     const flowModule = await availableFlows[flowName]();
     
