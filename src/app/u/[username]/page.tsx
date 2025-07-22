@@ -9,11 +9,6 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 
-// Correct type definition for Next.js App Router page props
-type PageProps = {
-    params: { username: string };
-};
-
 // This is a placeholder for fetching user data and checking auth status
 // In a real app, you would fetch this from your database and auth provider.
 const fetchUserByUsername = async (username: string) => {
@@ -46,7 +41,7 @@ const useIsRegisteredUser = () => {
 };
 
 
-export default function PublicProfilePage({ params }: PageProps) {
+export default function PublicProfilePage({ params }: { params: { username: string } }) {
     const [user, setUser] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
     const isRegisteredUser = useIsRegisteredUser();
