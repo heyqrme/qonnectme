@@ -10,16 +10,25 @@ export async function POST(
   { params }: { params: { flow: string } }
 ) {
   const flowId = params.flow;
-  const body = await req.json();
-
+  
   try {
-    const result = await run(flowId, body, {
-      // Note: The `next` plugin is required for this to work.
-      // We can also pass other options here, like `auth`.
-    });
+    const body = await req.json();
+    const result = await run(flowId, body);
     return result;
   } catch (error: any) {
     console.error(`Error executing flow ${flowId}:`, error);
+    
+    // Check if it's a Zod validation error for better client feedback
+    if (error.name === 'ZodError') {
+        return NextResponse.json(
+          {
+            error: 'Invalid input',
+            details: error.errors,
+          },
+          { status: 400 }
+        );
+    }
+    
     return NextResponse.json(
       {
         error: 'An unexpected error occurred.',
