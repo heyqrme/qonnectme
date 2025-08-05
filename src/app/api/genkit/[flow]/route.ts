@@ -2,7 +2,8 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { run } from '@genkit-ai/next';
+import { runFlow } from 'genkit';
+import { ZodError } from 'zod';
 import '@/ai/flows/suggest-profile-theme';
 
 export async function POST(
@@ -13,13 +14,13 @@ export async function POST(
   
   try {
     const body = await req.json();
-    const result = await run(flowId, body);
-    return result;
+    const result = await runFlow(flowId, body);
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error(`Error executing flow ${flowId}:`, error);
     
     // Check if it's a Zod validation error for better client feedback
-    if (error.name === 'ZodError') {
+    if (error instanceof ZodError) {
         return NextResponse.json(
           {
             error: 'Invalid input',
