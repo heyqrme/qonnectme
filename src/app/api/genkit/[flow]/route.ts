@@ -19,7 +19,6 @@ export async function POST(
   } catch (error: any) {
     console.error(`Error executing flow ${flowId}:`, error);
     
-    // Check if it's a Zod validation error for better client feedback
     if (error instanceof ZodError) {
         return NextResponse.json(
           {
