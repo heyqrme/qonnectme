@@ -47,7 +47,8 @@ const useIsRegisteredUser = () => {
 };
 
 
-export default function PublicProfilePage({ params }: PublicProfilePageProps) {
+export default function PublicProfilePage(props: PublicProfilePageProps) {
+    const { params } = props;
     const [user, setUser] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
     const isRegisteredUser = useIsRegisteredUser();
