@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useMusic } from "@/context/music-context";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare, Download } from "lucide-react";
+import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare, Download, PauseCircle, PlayCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
@@ -180,7 +180,7 @@ function ProfileContent() {
                                                 {songs.map((song, index) => (
                                                     <div key={song.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-secondary">
                                                         <button onClick={() => handlePlayPause(index)} className="text-accent">
-                                                            {isPlaying && currentSongIndex === index ? <Music className="h-5 w-5 animate-pulse" /> : <Music className="h-5 w-5" />}
+                                                            {isPlaying && currentSongIndex === index ? <PauseCircle className="h-5 w-5 animate-pulse" /> : <PlayCircle className="h-5 w-5" />}
                                                         </button>
                                                         <div className="flex-1">
                                                             <p className="font-medium">{song.title}</p>
