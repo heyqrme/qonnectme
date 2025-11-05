@@ -17,7 +17,7 @@ const Logo = ({ size = "large", withText = false, className = "" }) => (
 );
 
 // A simple placeholder for the Button component
-const CustomButton = ({ children, className, variant, href, ...props }) => {
+const CustomButton = ({ children, className, variant, href, ...props }: { children: React.ReactNode, className?: string, variant?: string, href?: string, [key: string]: any }) => {
   const baseClasses = "font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 text-lg";
   const variantClasses = variant === 'outline'
     ? "border border-primary text-primary hover:bg-primary/10 neon-text-purple"
@@ -46,7 +46,7 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: e.clientX,
         y: e.clientY
