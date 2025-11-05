@@ -1,12 +1,12 @@
 'use server';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { runFlow } from 'genkit';
 import { ZodError } from 'zod';
 import '@/ai/flows/suggest-profile-theme';
 
 export async function POST(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { flow: string } }
 ) {
   const flowId = params.flow;
