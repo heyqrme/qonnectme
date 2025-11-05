@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -7,16 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { QrCode, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-// Correct type definition for Next.js App Router page props
 type PublicProfilePageProps = {
     params: { username: string };
-    searchParams: { [key: string]: string | string[] | undefined };
 };
 
-// This is a placeholder for fetching user data and checking auth status
-// In a real app, you would fetch this from your database and auth provider.
 const fetchUserByUsername = async (username: string) => {
     const mockUsers: { [key: string]: any } = {
         janedoe: {
@@ -34,33 +29,33 @@ const fetchUserByUsername = async (username: string) => {
             bio: "Rocking out and taking names. Find me at the next show.",
         },
     };
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     return mockUsers[username] || null;
 };
 
-// This is a placeholder for checking if the current visitor is logged in.
 const useIsRegisteredUser = () => {
-    // In a real app, you would check for a valid session here.
-    // For this prototype, we'll toggle it to simulate both states.
-    // To test the "logged in" view, change this to `true`.
-    const [isRegistered] = React.useState(false); 
+    const [isRegistered] = useState(false); 
     return isRegistered;
 };
 
 
-export default function PublicProfilePage(props: PublicProfilePageProps) {
-    const { params } = props;
-    const [user, setUser] = React.useState<any>(null);
-    const [loading, setLoading] = React.useState(true);
+export default function PublicProfilePage({ params }: PublicProfilePageProps) {
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const isRegisteredUser = useIsRegisteredUser();
     const { toast } = useToast();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const loadUser = async () => {
+            setLoading(true);
             const userData = await fetchUserByUsername(params.username);
             setUser(userData);
             setLoading(false);
         }
-        loadUser();
+        if (params.username) {
+            loadUser();
+        }
     }, [params.username]);
 
     const handleSendRequest = () => {
@@ -71,7 +66,6 @@ export default function PublicProfilePage(props: PublicProfilePageProps) {
     };
 
     if (loading) {
-        // You can add a loading skeleton here
         return (
              <div className="flex items-center justify-center min-h-screen bg-background p-4">
                 <Card className="w-full max-w-md text-center shadow-2xl animate-pulse">
@@ -135,7 +129,7 @@ export default function PublicProfilePage(props: PublicProfilePageProps) {
                         </Button>
                     )}
                 </CardContent>
-            </Card>
+            </card>
         </div>
     );
 }
