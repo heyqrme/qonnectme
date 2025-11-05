@@ -1,17 +1,23 @@
 
 'use server';
 
-import { run } from '@genkit-ai/next';
 import { NextRequest, NextResponse } from 'next/server';
+import { run } from '@genkit-ai/next';
 import { ZodError } from 'zod';
+
+// IMPORTANT: Import all flows that you want to be exposed as API endpoints.
 import '@/ai/flows/suggest-profile-theme';
 
+// This is the standard Next.js 15 App Router API route handler.
 async function postHandler(req: NextRequest, { params }: { params: { flow: string } }) {
   const flowId = params.flow;
 
   try {
     const body = await req.json();
-    return NextResponse.json(body);
+    // The 'run' function from @genkit-ai/next will handle the actual flow execution.
+    // We pass it the flowId and the request body.
+    const result = await run(flowId, body);
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error(`Error processing request for flow ${flowId}:`, error);
 
@@ -35,9 +41,4 @@ async function postHandler(req: NextRequest, { params }: { params: { flow: strin
   }
 }
 
-export const POST = run(async (flowId, body) => {
-  // The 'run' wrapper from @genkit-ai/next handles flow execution.
-  // We don't need to call runFlow manually.
-  // The body is already parsed from the request.
-  return { flowId, body };
-});
+export const POST = postHandler;
