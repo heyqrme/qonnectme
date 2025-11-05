@@ -7,30 +7,7 @@ import Link from 'next/link';
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-
-// A simple placeholder for the Logo component
-const Logo = ({ size = "large", withText = false, className = "" }) => (
-  <div className={`flex items-center ${className}`}>
-    <div className="w-10 h-10 bg-primary rounded-md mr-4"></div>
-    {withText && <span className="text-2xl font-bold">Qonnectme</span>}
-  </div>
-);
-
-// A simple placeholder for the Button component
-const CustomButton = ({ children, className, variant, href, ...props }: { children: React.ReactNode, className?: string, variant?: string, href?: string, [key: string]: any }) => {
-  const baseClasses = "font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 text-lg";
-  const variantClasses = variant === 'outline'
-    ? "border border-primary text-primary hover:bg-primary/10 neon-text-purple"
-    : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white neon-border";
-  
-  const content = (
-    <button className={`${baseClasses} ${variantClasses} ${className}`} {...props}>
-      {children}
-    </button>
-  );
-
-  return href ? <Link href={href}>{content}</Link> : content;
-};
+import { Logo, CustomButton } from "@/components/landing-page-components";
 
 
 export default function Home() {
@@ -346,5 +323,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
