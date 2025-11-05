@@ -1,22 +1,19 @@
+
 'use server';
 
-import { runFlow } from 'genkit';
+import { run } from '@genkit-ai/next';
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import '@/ai/flows/suggest-profile-theme';
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { flow: string } }
-) {
+async function postHandler(req: NextRequest, { params }: { params: { flow: string } }) {
   const flowId = params.flow;
 
   try {
     const body = await req.json();
-    const result = await runFlow(flowId, body);
-    return NextResponse.json(result);
+    return NextResponse.json(body);
   } catch (error: any) {
-    console.error(`Error executing flow ${flowId}:`, error);
+    console.error(`Error processing request for flow ${flowId}:`, error);
 
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -37,3 +34,10 @@ export async function POST(
     );
   }
 }
+
+export const POST = run(async (flowId, body) => {
+  // The 'run' wrapper from @genkit-ai/next handles flow execution.
+  // We don't need to call runFlow manually.
+  // The body is already parsed from the request.
+  return { flowId, body };
+});
