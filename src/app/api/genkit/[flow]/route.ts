@@ -2,7 +2,7 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { run } from '@genkit-ai/next';
+import run from '@genkit-ai/next';
 import { ZodError } from 'zod';
 
 // IMPORTANT: Import all flows that you want to be exposed as API endpoints.
