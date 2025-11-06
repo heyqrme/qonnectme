@@ -4,20 +4,14 @@ import { AppHeader } from "@/components/app-header";
 import { MusicPlayer } from "@/components/music-player";
 import { useAuth } from "@/context/auth-context";
 import { MusicProvider } from "@/context/music-context";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { Loader2 } from "lucide-react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useAuth();
-  const router = useRouter();
-
-  React.useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
   
+  // The AuthProvider now handles the main loading and redirection logic.
+  // This layout just ensures that we don't render the app UI until the user is authenticated.
   if (isUserLoading || !user) {
     return (
       <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">

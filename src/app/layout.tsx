@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 import { FirebaseClientProvider } from '@/firebase';
+import { Loader2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Qonnectme v3',
@@ -32,9 +33,9 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <AuthProvider>
               {children}
-              <Toaster />
             </AuthProvider>
           </FirebaseClientProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
