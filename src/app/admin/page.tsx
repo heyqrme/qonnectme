@@ -303,51 +303,29 @@ function AdminDashboard() {
 }
 
 export default function AdminDashboardPage() {
-    const { user } = useAuth();
+    // Admin role functionality needs to be re-implemented using Firebase custom claims.
+    // For now, this page is not accessible.
     const router = useRouter();
 
     React.useEffect(() => {
-        // This effect can still redirect if necessary, but it doesn't cause conditional hook calls.
-        if (user && user.role !== 'admin') {
-            router.replace('/profile');
-        }
-    }, [user, router]);
+        router.replace('/profile');
+    }, [router]);
 
-    const renderContent = () => {
-        // While user is null (loading), show a loading state.
-        if (!user) {
-            return (
-                <div className="flex items-center justify-center h-full">
-                    <p>Loading...</p>
-                </div>
-            );
-        }
 
-        // If user is not an admin, show access denied message.
-        if (user.role !== 'admin') {
-            return (
-                <div className="flex items-center justify-center h-full">
+    return (
+        <AppLayout>
+            <main className="flex-1 p-4 md:p-8">
+                 <div className="flex items-center justify-center h-full">
                      <Card className="max-w-md w-full">
                         <CardHeader className="text-center">
                             <ShieldAlert className="h-12 w-12 text-destructive mx-auto" />
                             <CardTitle className="text-2xl">Access Denied</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-center text-muted-foreground">You do not have permission to view this page. You will be redirected shortly.</p>
+                            <p className="text-center text-muted-foreground">You do not have permission to view this page. You are being redirected.</p>
                         </CardContent>
                     </Card>
                 </div>
-            );
-        }
-
-        // If user is an admin, show the dashboard.
-        return <AdminDashboard />;
-    }
-
-    return (
-        <AppLayout>
-            <main className="flex-1 p-4 md:p-8">
-                {renderContent()}
             </main>
         </AppLayout>
     );

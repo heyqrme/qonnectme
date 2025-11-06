@@ -1,4 +1,3 @@
-
 'use client';
 
 import { AppHeader } from "@/components/app-header";
@@ -7,22 +6,25 @@ import { useAuth } from "@/context/auth-context";
 import { MusicProvider } from "@/context/music-context";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { AuthLayout } from "./auth-layout";
-import { AuthForm } from "./auth-form";
+import { Loader2 } from "lucide-react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isUserLoading } = useAuth();
   const router = useRouter();
 
   React.useEffect(() => {
-    if (user === null) {
+    if (!isUserLoading && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, isUserLoading, router]);
   
-  if (!user) {
-    // Optionally, render a loading spinner or a blank page while redirecting
-    return null; 
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground mt-4">Loading your Qonnection...</p>
+      </div>
+    );
   }
 
   return (

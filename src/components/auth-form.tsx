@@ -5,18 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
-import { QrCode } from "lucide-react";
+import { QrCode, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from 'next/navigation';
-import React from 'react';
+import { usePathname } from 'next/navigation';
+import React, { useState } from 'react';
 
 export function AuthForm() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { login } = useAuth();
-
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const { login, signup } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const isLogin = pathname === '/login';
   const title = isLogin ? 'Welcome Back!' : 'Create an Account';
@@ -25,10 +24,15 @@ export function AuthForm() {
   const linkText = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Log In";
   const linkHref = isLogin ? '/signup' : '/login';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
-    router.push('/profile');
+    setIsLoading(true);
+    if (isLogin) {
+      await login(email, password);
+    } else {
+      await signup(email, password);
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -61,10 +65,11 @@ export function AuthForm() {
             </div>
             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {buttonText}
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" disabled={isLoading}>
             Sign up with Google
           </Button>
         </form>
