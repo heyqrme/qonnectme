@@ -1,74 +1,63 @@
-// src/app/u/[username]/page.tsx
-
-"use client";
+'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { QrCode, UserPlus } from "lucide-react";
+import { QrCode, UserPlus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { useFirebase } from "@/firebase";
 
-// MOCK USER DATA - In a real app, this would be fetched from a database
-const mockUsers: { [key: string]: any } = {
-    "sarah": {
-        name: "Sarah",
-        username: "sarah",
-        avatarUrl: "https://i.pravatar.cc/150?u=sarah",
-        avatarHint: "A woman with brown hair and a friendly smile.",
-        bio: "Just a girl who loves music, coffee, and coding. 🎶☕💻",
-    },
-    "jane": {
-        name: "Jane Doe",
-        username: "jane",
-        avatarUrl: "https://i.pravatar.cc/150?u=jane",
-        avatarHint: "A person with short, dark hair, wearing glasses.",
-        bio: "Exploring the world one city at a time. Travel enthusiast and foodie.",
-    },
-    "alex": {
-        name: "Alex",
-        username: "alex",
-        avatarUrl: "https://i.pravatar.cc/150?u=alex",
-        avatarHint: "A person with blonde hair, looking thoughtfully into the distance.",
-        bio: "Musician, artist, and dreamer. Creating sounds and visuals.",
-    }
-};
 
-// Placeholder function to fetch user data
-const fetchUserByUsername = async (username: string) => {
-    console.log(`Fetching user: ${username}`);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return mockUsers[username.toLowerCase()] || null;
-};
-
-// Placeholder hook to check if the current user is registered
-const useIsRegisteredUser = () => {
-    // In a real app, this would check authentication status
-    return true;
-};
+interface UserProfile {
+    id: string;
+    name: string;
+    username: string;
+    avatarUrl: string;
+    bio: string;
+}
 
 const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params }) => {
-    const [user, setUser] = useState<any>(null);
+    const { firestore } = useFirebase();
+    const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const isRegisteredUser = useIsRegisteredUser();
     const { toast } = useToast();
 
     useEffect(() => {
-        const loadUser = async () => {
+        const fetchUserByUsername = async (username: string) => {
+            if (!firestore) return;
             setLoading(true);
-            const userData = await fetchUserByUsername(params.username);
-            setUser(userData);
-            setLoading(false);
-        }
+            try {
+                const usersRef = collection(firestore, "users");
+                // In a real app, you might query by a unique 'username' field.
+                // Here we simulate it by using the UID which is passed in the URL.
+                const q = query(usersRef, where("id", "==", username), limit(1));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0];
+                    setUser(userDoc.data() as UserProfile);
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error("Error fetching user:", error);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (params.username) {
-            loadUser();
+            fetchUserByUsername(params.username);
         }
-    }, [params.username]);
+    }, [params.username, firestore]);
 
     const handleSendRequest = () => {
+        if (!user) return;
         toast({
             title: "Request Sent!",
             description: `Your friend request to ${user.name} has been sent.`,
@@ -78,17 +67,15 @@ const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params 
     if (loading) {
         return (
              <div className="flex items-center justify-center min-h-screen bg-background p-4">
-                <Card className="w-full max-w-md text-center shadow-2xl animate-pulse">
+                <Card className="w-full max-w-md text-center shadow-2xl">
                     <CardHeader>
-                        <div className="h-32 w-32 rounded-full bg-muted mx-auto"></div>
+                        <Loader2 className="h-16 w-16 text-primary mx-auto animate-spin" />
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                           <div className="h-8 bg-muted rounded w-1/2 mx-auto"></div>
-                           <div className="h-4 bg-muted rounded w-1/4 mx-auto"></div>
+                           <h1 className="text-2xl font-bold">Loading Profile...</h1>
+                           <p className="text-muted-foreground">Please wait while we fetch the user's details.</p>
                         </div>
-                        <div className="h-6 bg-muted rounded w-3/4 mx-auto"></div>
-                        <div className="h-12 bg-muted rounded w-full"></div>
                     </CardContent>
                 </Card>
             </div>
@@ -101,7 +88,7 @@ const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params 
                 <QrCode className="h-16 w-16 text-destructive mb-4" />
                 <h1 className="text-4xl font-bold font-headline">User Not Found</h1>
                 <p className="text-muted-foreground mt-2">
-                    Oops! We couldn'''t find a profile for "@{params.username}".
+                    Oops! We couldn't find a profile for "@{params.username}". This could be because the user doesn't exist or the link is incorrect.
                 </p>
                 <Button asChild className="mt-6">
                     <Link href="/">Back to Home</Link>
@@ -115,7 +102,7 @@ const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params 
             <Card className="w-full max-w-md text-center shadow-2xl">
                 <CardHeader>
                      <Avatar className="h-32 w-32 mx-auto border-4 border-background shadow-lg">
-                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint={user.avatarHint} />
+                        <AvatarImage src={user.avatarUrl} alt={user.name} />
                         <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                 </CardHeader>
@@ -127,17 +114,9 @@ const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params 
                     <p className="text-muted-foreground">
                         {user.bio}
                     </p>
-                    {isRegisteredUser ? (
-                        <Button onClick={handleSendRequest} size="lg" className="w-full">
-                            <UserPlus className="mr-2" /> Send Friend Request
-                        </Button>
-                    ) : (
-                        <Button asChild size="lg" className="w-full">
-                            <Link href="/signup">
-                                <UserPlus className="mr-2" /> Sign Up to Connect
-                            </Link>
-                        </Button>
-                    )}
+                    <Button onClick={handleSendRequest} size="lg" className="w-full">
+                        <UserPlus className="mr-2" /> Send Friend Request
+                    </Button>
                 </CardContent>
             </Card>
         </div>

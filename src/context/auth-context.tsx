@@ -5,20 +5,20 @@ import { useRouter } from 'next/navigation';
 import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-
+import { doc, setDoc } from 'firebase/firestore';
 
 interface AuthContextType {
     user: User | null;
     isUserLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    signup: (email: string, password: string) => Promise<void>;
+    signup: (email: string, password: string, name: string) => Promise<void>;
     logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const { auth } = useFirebase();
+    const { auth, firestore } = useFirebase();
     const { toast } = useToast();
     const [user, setUser] = useState<User | null>(null);
     const [isUserLoading, setIsUserLoading] = useState(true);
@@ -46,9 +46,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
     
-    const signup = async (email: string, password: string) => {
+    const signup = async (email: string, password: string, name: string) => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = userCredential.user;
+
+            // Create a new user profile in Firestore
+            const userRef = doc(firestore, 'users', newUser.uid);
+            await setDoc(userRef, {
+                id: newUser.uid,
+                name: name,
+                username: email.split('@')[0],
+                email: newUser.email,
+                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/${newUser.uid}`,
+                bio: `Welcome to my Qonnectme profile!`,
+                avatarUrl: `https://placehold.co/128x128.png`,
+                photoIds: [],
+                videoIds: [],
+                musicIds: []
+            });
+
             router.push('/profile');
         } catch (error: any) {
             console.error("Signup failed:", error);

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { AppLayout } from "@/components/app-layout";
@@ -12,32 +10,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useMusic } from "@/context/music-context";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Music, Video, Image as ImageIcon, Upload, Camera, Copy, MessageSquare, Download, PauseCircle, PlayCircle } from "lucide-react";
+import { Edit, Music, Video, Image as ImageIcon, Upload, Copy, Download, PauseCircle, PlayCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
+import { useAuth, useDoc, useFirebase, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
+
+interface UserProfile {
+    id: string;
+    name: string;
+    username: string;
+    avatarUrl: string;
+    bio: string;
+    qrCodeUrl: string;
+    profileUrl: string;
+    photos: { id: number; url: string; hint: string }[];
+    videos: { id: number; url: string; hint: string }[];
+}
 
 function ProfileContent() {
     const { songs, handleUploadSong, handlePlayPause, currentSongIndex, isPlaying } = useMusic();
     const [newSongFile, setNewSongFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+    const { user } = useAuth();
+    const { firestore } = useFirebase();
 
-    const user = {
-        name: "Jane Doe",
-        username: "janedoe",
-        avatarUrl: "https://placehold.co/128x128.png",
-        bio: "Music lover, photographer, adventurer. Living life one day at a time. Exploring the world and connecting with amazing people.",
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/janedoe&bgcolor=1f1f1f&color=A080DD&qzone=1`,
-        profileUrl: "https://qonnect.me/u/janedoe",
-        photos: Array(9).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "portrait nature" })),
-        videos: Array(3).fill(0).map((_, i) => ({ id: i, url: "https://placehold.co/400x400.png", hint: "travel video" })),
-        posts: [
-            { id: 1, content: "Just discovered a new chillwave artist, totally recommend checking out their stuff. Perfect for late-night coding sessions. 🎧", timestamp: "1 day ago" },
-            { id: 2, content: "Last night was epic! 🎸 What a show!", timestamp: "3 days ago" },
-        ]
-    };
-    
+    const userProfileRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
+    const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setNewSongFile(event.target.files[0]);
@@ -55,7 +61,8 @@ function ProfileContent() {
     };
     
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(user.profileUrl);
+        if (!userProfile) return;
+        navigator.clipboard.writeText(userProfile.profileUrl);
         toast({
             title: "Copied to clipboard!",
             description: "Your profile link has been copied.",
@@ -63,13 +70,14 @@ function ProfileContent() {
     };
 
     const handleDownloadQR = async () => {
+        if (!userProfile) return;
         try {
-            const response = await fetch(user.qrCodeUrl);
+            const response = await fetch(userProfile.qrCodeUrl);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${user.username}-qonnectme-qr.png`;
+            a.download = `${userProfile.username}-qonnectme-qr.png`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -87,6 +95,14 @@ function ProfileContent() {
         }
     };
 
+    if (isLoading || !userProfile) {
+        return (
+            <main className="flex-1 p-4 md:p-8 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </main>
+        )
+    }
+
     return (
         <main className="flex-1 p-4 md:p-8">
             <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-8">
@@ -97,7 +113,7 @@ function ProfileContent() {
                                 {/* QR Code Section */}
                                 <div className="flex flex-col items-center justify-center gap-2 h-full">
                                     <div className="p-2 bg-white rounded-lg shadow-md" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'}}>
-                                        <Image src={user.qrCodeUrl} alt={`${user.name}'s QR Code`} width={128} height={128} className="transform rotate-45" />
+                                        <Image src={userProfile.qrCodeUrl} alt={`${userProfile.name}'s QR Code`} width={128} height={128} className="transform rotate-45" />
                                     </div>
                                     <div className="flex flex-col gap-1 mt-2">
                                         <Button variant="ghost" size="sm" onClick={handleCopyLink} className="text-muted-foreground">
@@ -122,8 +138,8 @@ function ProfileContent() {
                                             style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'}}
                                         >
                                             <Avatar className="h-32 w-32">
-                                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
-                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.name} data-ai-hint="female portrait" />
+                                                <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                         </div>
                                     </div>
@@ -132,10 +148,10 @@ function ProfileContent() {
                                 {/* User Info Section */}
                                 <div className="flex flex-col items-center md:items-start gap-2">
                                      <div className="space-y-1 text-center md:text-left">
-                                        <h1 className="text-2xl font-bold text-card-foreground font-headline">{user.name}</h1>
-                                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+                                        <h1 className="text-2xl font-bold text-card-foreground font-headline">{userProfile.name}</h1>
+                                        <p className="text-sm text-muted-foreground">@{userProfile.username}</p>
                                     </div>
-                                    <p className="text-sm text-muted-foreground max-w-xs">{user.bio}</p>
+                                    <p className="text-sm text-muted-foreground max-w-xs">{userProfile.bio}</p>
                                     <Button asChild variant="outline" size="sm" className="mt-2">
                                         <Link href="/profile/edit"><Edit className="mr-2 h-4 w-4"/> Edit Profile</Link>
                                     </Button>
@@ -148,27 +164,16 @@ function ProfileContent() {
                                     <TabsTrigger value="photos"><ImageIcon className="mr-2 h-4 w-4" /> Photos</TabsTrigger>
                                     <TabsTrigger value="videos"><Video className="mr-2 h-4 w-4" /> Videos</TabsTrigger>
                                     <TabsTrigger value="music"><Music className="mr-2 h-4 w-4" /> Music</TabsTrigger>
-                                    <TabsTrigger value="posts"><MessageSquare className="mr-2 h-4 w-4" /> Posts</TabsTrigger>
+                                    <TabsTrigger value="posts"><ImageIcon className="mr-2 h-4 w-4" /> Posts</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="photos" className="mt-4">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {user.photos.map(photo => (
-                                            <div key={photo.id} className="aspect-square overflow-hidden rounded-lg group">
-                                                <Image src={photo.url} alt="User photo" width={400} height={400} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" data-ai-hint={photo.hint} />
-                                            </div>
-                                        ))}
+                                    <div className="text-center text-muted-foreground py-8">
+                                        Photo gallery coming soon!
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="videos" className="mt-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {user.videos.map(video => (
-                                            <div key={video.id} className="aspect-square overflow-hidden rounded-lg group relative">
-                                                <Image src={video.url} alt="User video" width={400} height={400} className="h-full w-full object-cover" data-ai-hint={video.hint} />
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Video className="h-12 w-12 text-white" />
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="text-center text-muted-foreground py-8">
+                                        Video gallery coming soon!
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="music" className="mt-4">
@@ -220,43 +225,8 @@ function ProfileContent() {
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="posts" className="mt-4">
-                                    <div className="grid gap-6">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Create a new post</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4">
-                                                <Textarea placeholder="What's on your mind?" />
-                                                <Button>Post</Button>
-                                            </CardContent>
-                                        </Card>
-                                        <div className="space-y-4">
-                                            <h3 className="text-xl font-semibold font-headline">Your Posts</h3>
-                                            {user.posts.map(post => (
-                                                <Card key={post.id}>
-                                                    <CardContent className="p-6">
-                                                        <div className="flex gap-4">
-                                                            <Avatar>
-                                                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="female portrait" />
-                                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2 text-sm">
-                                                                    <p className="font-semibold">{user.name}</p>
-                                                                    <p className="text-muted-foreground">@{user.username}</p>
-                                                                    <span className="text-muted-foreground">·</span>
-                                                                    <p className="text-muted-foreground">{post.timestamp}</p>
-                                                                </div>
-                                                                <p className="mt-2 text-card-foreground">{post.content}</p>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                            {user.posts.length === 0 && (
-                                                <p className="text-muted-foreground text-center py-4">You haven't made any posts yet.</p>
-                                            )}
-                                        </div>
+                                    <div className="text-center text-muted-foreground py-8">
+                                        Posts coming soon!
                                     </div>
                                 </TabsContent>
                             </Tabs>

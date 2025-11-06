@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 export function AuthForm() {
   const pathname = usePathname();
   const { login, signup } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,7 @@ export function AuthForm() {
     if (isLogin) {
       await login(email, password);
     } else {
-      await signup(email, password);
+      await signup(email, password, name);
     }
     setIsLoading(false);
   };
@@ -47,7 +48,7 @@ export function AuthForm() {
           {!isLogin && (
             <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="John Doe" required />
+              <Input id="name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
           )}
           <div className="grid gap-2">
