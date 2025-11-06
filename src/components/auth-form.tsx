@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
 import { QrCode, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 export function AuthForm() {
   const pathname = usePathname();
+  const router = useRouter();
   const { login, signup } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,12 +29,17 @@ export function AuthForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    let success = false;
     if (isLogin) {
-      await login(email, password);
+      success = await login(email, password);
     } else {
-      await signup(email, password, name);
+      success = await signup(email, password, name);
     }
     setIsLoading(false);
+
+    if (success) {
+      router.push('/profile');
+    }
   };
 
   return (
