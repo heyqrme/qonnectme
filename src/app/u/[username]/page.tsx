@@ -1,47 +1,56 @@
+// src/app/u/[username]/page.tsx
 
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { QrCode, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useToast } from "@/hooks/use-toast";
 import React, { useEffect, useState } from "react";
+import type { NextPage } from "next";
 
-type PublicProfilePageProps = {
-    params: { username: string };
+// MOCK USER DATA - In a real app, this would be fetched from a database
+const mockUsers: { [key: string]: any } = {
+    "sarah": {
+        name: "Sarah",
+        username: "sarah",
+        avatarUrl: "https://i.pravatar.cc/150?u=sarah",
+        avatarHint: "A woman with brown hair and a friendly smile.",
+        bio: "Just a girl who loves music, coffee, and coding. 🎶☕💻",
+    },
+    "jane": {
+        name: "Jane Doe",
+        username: "jane",
+        avatarUrl: "https://i.pravatar.cc/150?u=jane",
+        avatarHint: "A person with short, dark hair, wearing glasses.",
+        bio: "Exploring the world one city at a time. Travel enthusiast and foodie.",
+    },
+    "alex": {
+        name: "Alex",
+        username: "alex",
+        avatarUrl: "https://i.pravatar.cc/150?u=alex",
+        avatarHint: "A person with blonde hair, looking thoughtfully into the distance.",
+        bio: "Musician, artist, and dreamer. Creating sounds and visuals.",
+    }
 };
 
+// Placeholder function to fetch user data
 const fetchUserByUsername = async (username: string) => {
-    const mockUsers: { [key: string]: any } = {
-        janedoe: {
-            name: "Jane Doe",
-            username: "janedoe",
-            avatarUrl: "https://placehold.co/128x128.png",
-            avatarHint: "female portrait",
-            bio: "Music lover, photographer, adventurer. Living life one day at a time.",
-        },
-        alexray: {
-            name: "Alex Ray",
-            username: "alexray",
-            avatarUrl: "https://placehold.co/128x128.png",
-            avatarHint: "male portrait",
-            bio: "Rocking out and taking names. Find me at the next show.",
-        },
-    };
+    console.log(`Fetching user: ${username}`);
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockUsers[username] || null;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return mockUsers[username.toLowerCase()] || null;
 };
 
+// Placeholder hook to check if the current user is registered
 const useIsRegisteredUser = () => {
-    const [isRegistered] = useState(false); 
-    return isRegistered;
+    // In a real app, this would check authentication status
+    return true;
 };
 
-
-export default function PublicProfilePage({ params }: PublicProfilePageProps) {
+const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params }) => {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const isRegisteredUser = useIsRegisteredUser();
@@ -92,7 +101,7 @@ export default function PublicProfilePage({ params }: PublicProfilePageProps) {
                 <QrCode className="h-16 w-16 text-destructive mb-4" />
                 <h1 className="text-4xl font-bold font-headline">User Not Found</h1>
                 <p className="text-muted-foreground mt-2">
-                    Oops! We couldn't find a profile for "@{params.username}".
+                    Oops! We couldn'''t find a profile for "@{params.username}".
                 </p>
                 <Button asChild className="mt-6">
                     <Link href="/">Back to Home</Link>
@@ -134,3 +143,5 @@ export default function PublicProfilePage({ params }: PublicProfilePageProps) {
         </div>
     );
 }
+
+export default PublicProfilePage;

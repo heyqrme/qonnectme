@@ -1,6 +1,6 @@
-/** @type {import('next').NextConfig} */
+
+ /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -23,18 +23,13 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'imgur.com',
+        hostname: 'your-other-hostname.com', // Replace with actual hostname
         port: '',
         pathname: '/**',
-      }
+      },
     ],
-  },
-  webpack: (config, { isServer }) => {
-    config.infrastructureLogging = {
-      level: 'error',
-    };
-    return config;
   },
 };
 
 module.exports = nextConfig;
+
