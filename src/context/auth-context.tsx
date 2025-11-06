@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isUserLoading, setIsUserLoading] = useState(true);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -32,10 +33,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return () => unsubscribe();
     }, [auth]);
 
+    useEffect(() => {
+        // If user is loaded and exists, and they are on a public page, redirect to profile
+        if (!isUserLoading && user) {
+            const isAuthPage = pathname === '/login' || pathname === '/signup';
+            if (isAuthPage) {
+                router.push('/profile');
+            }
+        }
+    }, [user, isUserLoading, pathname, router]);
+
     const login = async (email: string, password: string) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            router.push('/profile');
+            // The useEffect hook will handle redirection
         } catch (error: any) {
             console.error("Login failed:", error);
             toast({
@@ -58,15 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 name: name,
                 username: email.split('@')[0],
                 email: newUser.email,
-                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/${newUser.uid}`,
+                qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/${newUser.uid}`,
+                profileUrl: `/u/${newUser.uid}`,
                 bio: `Welcome to my Qonnectme profile!`,
                 avatarUrl: `https://placehold.co/128x128.png`,
-                photoIds: [],
-                videoIds: [],
-                musicIds: []
+                photos: [],
+                videos: [],
             });
 
-            router.push('/profile');
+             // The useEffect hook will handle redirection
         } catch (error: any) {
             console.error("Signup failed:", error);
             toast({
