@@ -39,9 +39,9 @@ function ProfileContent({ user }: { user: User }) {
     const { firestore } = useFirebase();
 
     const userProfileRef = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
+        if (!user?.uid || !firestore) return null;
         return doc(firestore, 'users', user.uid);
-    }, [user, firestore]);
+    }, [user?.uid, firestore]);
 
     const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
 
@@ -71,7 +71,7 @@ function ProfileContent({ user }: { user: User }) {
     };
 
     const handleDownloadQR = async () => {
-        if (!userProfile) return;
+        if (!userProfile?.qrCodeUrl) return;
         try {
             const response = await fetch(userProfile.qrCodeUrl);
             const blob = await response.blob();

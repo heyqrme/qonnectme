@@ -19,15 +19,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const isProtectedRoute = protectedRoutes.includes(pathname);
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
     const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/u/');
 
-    if (!user && isProtectedRoute) {
-      // If user is not logged in and tries to access a protected route, redirect to login
-      router.push('/login');
-    } else if (user && (pathname === '/login' || pathname === '/signup')) {
+    if (user && (pathname === '/login' || pathname === '/signup')) {
       // If user is logged in and on a login/signup page, redirect to profile
       router.push('/profile');
+    } else if (!user && isProtectedRoute) {
+      // If user is not logged in and tries to access a protected route, redirect to login
+      router.push('/login');
     }
 
   }, [isUserLoading, user, pathname, router]);
@@ -43,7 +43,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   // If user is not authenticated and on a protected page, we show a loader while redirecting.
-  if (!user && protectedRoutes.includes(pathname)) {
+  // This prevents a brief flash of the unprotected page content.
+  if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
      return (
       <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -9,7 +9,8 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
-import { useFirebase } from "@/firebase";
+import { useCollection, useFirebase } from "@/firebase";
+import { useMemoFirebase } from "@/hooks/use-memo-firebase";
 
 
 interface UserProfile {
@@ -22,39 +23,17 @@ interface UserProfile {
 
 const PublicProfilePage: NextPage<{ params: { username: string } }> = ({ params }) => {
     const { firestore } = useFirebase();
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        const fetchUserByUsername = async (username: string) => {
-            if (!firestore) return;
-            setLoading(true);
-            try {
-                const usersRef = collection(firestore, "users");
-                // In a real app, you might query by a unique 'username' field.
-                // Here we simulate it by using the UID which is passed in the URL.
-                const q = query(usersRef, where("id", "==", username), limit(1));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    const userDoc = querySnapshot.docs[0];
-                    setUser(userDoc.data() as UserProfile);
-                } else {
-                    setUser(null);
-                }
-            } catch (error) {
-                console.error("Error fetching user:", error);
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const usersRef = useMemoFirebase(() => {
+        if (!firestore) return null;
+        // In a real app, you might query by a unique 'username' field.
+        // Here we simulate it by using the UID which is passed in the URL, but querying for it.
+        return query(collection(firestore, "users"), where("username", "==", params.username), limit(1));
+    }, [firestore, params.username]);
 
-        if (params.username) {
-            fetchUserByUsername(params.username);
-        }
-    }, [params.username, firestore]);
+    const { data: users, isLoading: loading } = useCollection<UserProfile>(usersRef);
+    const user = users?.[0];
 
     const handleSendRequest = () => {
         if (!user) return;
