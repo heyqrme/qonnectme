@@ -13,7 +13,8 @@ import { Edit, Music, Video, Image as ImageIcon, Upload, Copy, Download, PauseCi
 import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
-import { useAuth, useDoc, useFirebase, useMemoFirebase } from "@/firebase";
+import { useAuth, useDoc, useFirebase } from "@/firebase";
+import { useMemoFirebase } from "@/hooks/use-memo-firebase";
 import { doc } from "firebase/firestore";
 import type { User } from 'firebase/auth';
 
