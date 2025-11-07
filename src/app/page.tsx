@@ -253,7 +253,8 @@ export default function Home() {
                       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                       className={cn(
                         "p-4 rounded-lg relative transition-all duration-300",
-                        isDark ? `bg-black ${hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]'}` : 'bg-white shadow-lg'
+                        isDark ? 'bg-black' : 'bg-white shadow-lg',
+                        isDark && (hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]')
                       )}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.98 }}
