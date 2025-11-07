@@ -113,7 +113,13 @@ function ProfileContent({ user }: { user: User }) {
                             {/* QR Code Section */}
                             <div className="flex flex-col items-center justify-center gap-2 h-full">
                                 <div className="p-2 bg-white rounded-lg shadow-md">
-                                    <Image src={userProfile.qrCodeUrl} alt={`${userProfile.name}'s QR Code`} width={128} height={128} />
+                                    {userProfile.qrCodeUrl ? (
+                                        <Image src={userProfile.qrCodeUrl} alt={`${userProfile.name}'s QR Code`} width={128} height={128} />
+                                    ) : (
+                                        <div className="w-[128px] h-[128px] bg-gray-200 flex items-center justify-center">
+                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col gap-1 mt-2">
                                     <Button variant="ghost" size="sm" onClick={handleCopyLink} className="text-muted-foreground">
