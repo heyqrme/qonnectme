@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import Link from 'next/link';
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Logo, CustomButton } from "@/components/landing-page-components";
+import { useAuth } from "@/context/auth-context";
 
 
 export default function Home() {
@@ -15,9 +15,7 @@ export default function Home() {
   const [hoverQR, setHoverQR] = useState(false);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-
-  // This would be replaced by your app's user state
-  const user = null; 
+  const { user } = useAuth();
 
   // Track mouse movement for dynamic lighting effects
   useEffect(() => {
@@ -143,7 +141,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               {user ? (
-                <CustomButton href="/dashboard">Go to Profile</CustomButton>
+                <CustomButton href="/profile">Go to Profile</CustomButton>
               ) : (
                 <>
                   <CustomButton href="/signup">Get Your QR Code</CustomButton>
@@ -253,7 +251,10 @@ export default function Home() {
                     <motion.div
                       animate={isDark ? { rotate: [3, -3, 3], y: [0, -10, 0] } : {}}
                       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                      className={cn("p-4 rounded-lg relative transition-all duration-300", isDark ? `bg-black ${hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]'}` : 'bg-white shadow-lg')}
+                      className={cn(
+                        "p-4 rounded-lg relative transition-all duration-300",
+                        isDark ? `bg-black ${hoverQR ? 'scale-110 shadow-[0_0_30px_rgba(168,85,247,0.8)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.4)]'}` : 'bg-white shadow-lg'
+                      )}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.98 }}
                     >
