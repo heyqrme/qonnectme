@@ -1,4 +1,4 @@
-'use client';
+''''use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +23,7 @@ export default function EditProfilePage() {
     const { toast } = useToast();
     const router = useRouter();
 
+    const [isLoading, setIsLoading] = useState(true);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [name, setName] = useState('');
@@ -31,14 +32,21 @@ export default function EditProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [initialUsername, setInitialUsername] = useState('');
 
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
-        if (user) {
-            const initialUserUsername = user.email?.split('@')[0] || '';
-            setAvatarPreview(user.photoURL);
-            setName(user.displayName || '');
-            
-            const userDocRef = doc(firestore, "users", user.uid);
-            getDoc(userDocRef).then(docSnap => {
+        if (!user) return;
+
+        const fetchUserData = async () => {
+            setIsLoading(true);
+            try {
+                const initialUserUsername = user.email?.split('@')[0] || '';
+                setName(user.displayName || '');
+                setAvatarPreview(user.photoURL);
+
+                const userDocRef = doc(firestore, "users", user.uid);
+                const docSnap = await getDoc(userDocRef);
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     setUsername(data.username || initialUserUsername);
@@ -48,11 +56,16 @@ export default function EditProfilePage() {
                     setUsername(initialUserUsername);
                     setInitialUsername(initialUserUsername);
                 }
-            });
-        }
-    }, [user, firestore]);
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+                toast({ variant: "destructive", title: "Failed to load profile", description: "There was an error loading your profile data." });
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    const avatarInputRef = useRef<HTMLInputElement>(null);
+        fetchUserData();
+    }, [user, firestore, toast]);
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -65,7 +78,7 @@ export default function EditProfilePage() {
             reader.readAsDataURL(file);
         }
     };
-    
+
     const handleSaveChanges = async () => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Not authenticated' });
@@ -92,17 +105,14 @@ export default function EditProfilePage() {
                 await uploadBytes(storageRef, avatarFile);
                 newAvatarUrl = await getDownloadURL(storageRef);
             }
-            
-            await updateProfile(user, {
-                displayName: name,
-                photoURL: newAvatarUrl
-            });
+
+            await updateProfile(user, { displayName: name, photoURL: newAvatarUrl });
 
             const batch = writeBatch(firestore);
             const userDocRef = doc(firestore, 'users', user.uid);
             const profileUrl = `${window.location.origin}/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
-            
+
             batch.set(userDocRef, {
                 id: user.uid,
                 name: name,
@@ -119,7 +129,7 @@ export default function EditProfilePage() {
                 const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
                 batch.delete(oldUsernameDocRef);
             }
-            
+
             await batch.commit();
 
             await reloadUser();
@@ -142,6 +152,16 @@ export default function EditProfilePage() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center flex-1">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        )
+    }
+
     return (
         <AppLayout>
             <main className="flex-1 p-4 md:p-8">
@@ -156,7 +176,7 @@ export default function EditProfilePage() {
                                 <div className="relative group">
                                     <Avatar className="h-32 w-32">
                                         <AvatarImage src={avatarPreview || undefined} alt="User Avatar" />
-                                        <AvatarFallback>{name?.slice(0,2) || '...'}</AvatarFallback>
+                                        <AvatarFallback>{name?.slice(0, 2) || '...'}</AvatarFallback>
                                     </Avatar>
                                     <button
                                         onClick={() => avatarInputRef.current?.click()}
@@ -182,7 +202,7 @@ export default function EditProfilePage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="username">Username</Label>
-                                        <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isSaving}/>
+                                        <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isSaving} />
                                     </div>
                                 </div>
                             </div>
@@ -200,9 +220,9 @@ export default function EditProfilePage() {
                             Save Changes
                         </Button>
                     </div>
-
                 </div>
             </main>
         </AppLayout>
     );
 }
+'''
