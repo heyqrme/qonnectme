@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
-import { useFirebase, errorEmitter, FirestorePermissionError } from "@/firebase";
+import { useFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,6 @@ export default function EditProfilePage() {
             setName(user.displayName || '');
             setUsername(user.email?.split('@')[0] || '');
             // In a real app, you'd fetch the bio from Firestore here.
-            // For now, we'll leave it blank or get it from a potential userProfile object.
         }
     }, [user]);
 
@@ -61,6 +60,8 @@ export default function EditProfilePage() {
         }
 
         setIsSaving(true);
+        let success = false;
+
         try {
             let newAvatarUrl = user.photoURL;
 
@@ -77,44 +78,57 @@ export default function EditProfilePage() {
                 photoURL: newAvatarUrl
             });
 
-            // 3. Prepare data for Firestore update
+            // 3. Prepare and save data to Firestore
             const userDocRef = doc(firestore, 'users', user.uid);
+            const profileUrl = `${window.location.origin}/${username}`;
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
+            
             const updatedData = {
+                id: user.uid,
                 name: name,
                 username: username,
                 bio: bio,
-                avatarUrl: newAvatarUrl
+                avatarUrl: newAvatarUrl,
+                profileUrl: profileUrl,
+                qrCodeUrl: qrCodeUrl
             };
 
-            // 4. Use non-blocking update with specific error handling for Firestore
-            updateDoc(userDocRef, updatedData)
-                .catch(error => {
-                    console.error('Firestore update failed:', error);
-                    // This will generate a rich error in the dev console if it's a permission issue
-                    const permissionError = new FirestorePermissionError({
-                        path: userDocRef.path,
-                        operation: 'update',
-                        requestResourceData: updatedData,
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
+            // 4. Await the Firestore operation. Use setDoc with merge to create or update.
+            await setDoc(userDocRef, updatedData, { merge: true });
 
-
-            // 5. Reload the user data in the auth context and give feedback optimistically
+            // 5. Reload user data and provide feedback
             await reloadUser();
-
-            toast({ title: 'Profile Update Queued', description: 'Your changes are being saved.' });
-            router.push('/profile');
+            toast({ title: 'Profile Saved!', description: 'Your changes have been successfully saved.' });
+            success = true;
 
         } catch (error: any) {
             console.error("Failed to save profile:", error);
+            let description = 'An unexpected error occurred.';
+            if (error.code) {
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        description = 'Permission denied: Make sure your Storage Rules allow avatar uploads.';
+                        break;
+                    case 'permission-denied':
+                        description = 'Permission denied: Make sure your Firestore Rules allow writing to your user profile.';
+                        break;
+                    default:
+                        description = error.message;
+                }
+            }
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
-                description: error.message || 'An unexpected error occurred while uploading the image or updating your auth profile.'
+                description: description
             });
         } finally {
+            // This is the crucial part:
+            // 1. Always re-enable the form
             setIsSaving(false);
+            // 2. Navigate away ONLY if the save was successful
+            if (success) {
+                router.push('/profile');
+            }
         }
     };
 
@@ -132,7 +146,7 @@ export default function EditProfilePage() {
                             <div className="flex flex-col items-center sm:items-start sm:flex-row gap-6">
                                 <div className="relative group">
                                     <Avatar className="h-32 w-32">
-                                        <AvatarImage src={avatarPreview || undefined} alt="User Avatar" data-ai-hint="person avatar" />
+                                        <AvatarImage src={avatarPreview || undefined} alt="User Avatar" />
                                         <AvatarFallback>{name?.slice(0,2) || '...'}</AvatarFallback>
                                     </Avatar>
                                     <button
