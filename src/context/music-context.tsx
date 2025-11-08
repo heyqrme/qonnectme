@@ -37,22 +37,33 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     const [currentSongIndex, setCurrentSongIndex] = useState<number | null>(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const isPlayingRef = useRef(isPlaying);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
     const handlePlayPause = (index?: number) => {
         const targetIndex = index ?? currentSongIndex;
         if (targetIndex === null) return;
     
-        if (currentSongIndex === targetIndex && audioRef.current) {
+        const audio = audioRef.current;
+        if (!audio) return;
+    
+        const isNewSong = currentSongIndex !== targetIndex;
+
+        if (isNewSong) {
+            setCurrentSongIndex(targetIndex);
+            // The useEffect will handle loading the new song
+        } else {
+            // Toggle play/pause for the current song
             if (isPlaying) {
-                audioRef.current.pause();
+                audio.pause();
                 setIsPlaying(false);
             } else {
-                audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+                audio.play().catch(e => console.error("Audio play failed:", e));
                 setIsPlaying(true);
             }
-        } else {
-            setCurrentSongIndex(targetIndex);
-            setIsPlaying(true); // Set intent to play the new song
         }
     };
 
@@ -60,7 +71,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         if (songs.length > 0 && currentSongIndex !== null) {
             const nextIndex = (currentSongIndex + 1) % songs.length;
             setCurrentSongIndex(nextIndex);
-            setIsPlaying(true);
         }
     };
 
@@ -68,7 +78,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         if (songs.length > 0 && currentSongIndex !== null) {
             const prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
             setCurrentSongIndex(prevIndex);
-            setIsPlaying(true);
         }
     };
 
@@ -86,7 +95,6 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
             } else {
                  const newIndex = currentSongIndex % newSongs.length;
                  setCurrentSongIndex(newIndex);
-                 // isPlaying will be handled by the useEffect below
             }
         }
         setSongs(newSongs);
@@ -110,20 +118,22 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
             const song = songs[currentSongIndex];
             if (audio.src !== song.url) {
                 audio.src = song.url;
-                audio.load();
-            }
-
-            if (isPlaying) {
-                audio.play().catch(e => console.error("Audio play failed on change:", e));
-            } else {
-                audio.pause();
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        setIsPlaying(true);
+                    }).catch(error => {
+                        console.error("Audio play failed on new song:", error);
+                        setIsPlaying(false);
+                    });
+                }
             }
         } else {
             audio.pause();
             audio.src = "";
             setIsPlaying(false);
         }
-    }, [currentSongIndex, songs, isPlaying]);
+    }, [currentSongIndex, songs]);
 
 
     const value = {
