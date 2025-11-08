@@ -1,9 +1,7 @@
-
 'use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ThemeSuggester } from "@/components/theme-suggester";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -80,8 +78,6 @@ export default function EditProfilePage() {
                         <Button variant="outline">Cancel</Button>
                         <Button>Save Changes</Button>
                     </div>
-
-                    <ThemeSuggester />
 
                 </div>
             </main>
