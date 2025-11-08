@@ -1,4 +1,4 @@
-'use client';
+''''use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +11,7 @@ import { useAuth } from "@/context/auth-context";
 import { useFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, writeBatch, deleteDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -29,15 +29,30 @@ export default function EditProfilePage() {
     const [username, setUsername] = useState('');
     const [bio, setBio] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [initialUsername, setInitialUsername] = useState('');
+
 
     useEffect(() => {
         if (user) {
-            setAvatarPreview(user.photoURL || "https://placehold.co/128x128.png");
+            const initialUserUsername = user.email?.split('@')[0] || '';
+            setAvatarPreview(user.photoURL || `https://placehold.co/128x128.png`);
             setName(user.displayName || '');
-            setUsername(user.email?.split('@')[0] || '');
-            // In a real app, you'd fetch the bio from Firestore here.
+            
+            // Fetch profile from Firestore to get username and bio
+            const userDocRef = doc(firestore, "users", user.uid);
+            getDoc(userDocRef).then(docSnap => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setUsername(data.username || initialUserUsername);
+                    setInitialUsername(data.username || initialUserUsername);
+                    setBio(data.bio || '');
+                } else {
+                    setUsername(initialUserUsername);
+                    setInitialUsername(initialUserUsername);
+                }
+            });
         }
-    }, [user]);
+    }, [user, firestore]);
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,27 +78,43 @@ export default function EditProfilePage() {
         let success = false;
 
         try {
+            // 1. Check if username is taken, but only if it has changed
+            if (username !== initialUsername) {
+                const usernameDocRef = doc(firestore, "usernames", username);
+                const usernameDoc = await getDoc(usernameDocRef);
+                if (usernameDoc.exists()) {
+                    toast({
+                        variant: "destructive",
+                        title: "Username Taken",
+                        description: "This username is already in use. Please choose another one.",
+                    });
+                    throw new Error("Username taken"); // Abort the save
+                }
+            }
+
             let newAvatarUrl = user.photoURL;
 
-            // 1. Upload new avatar if one was selected
+            // 2. Upload new avatar if one was selected
             if (avatarFile) {
                 const storageRef = ref(storage, `avatars/${user.uid}/${avatarFile.name}`);
-                const uploadTask = await uploadBytes(storageRef, avatarFile);
-                newAvatarUrl = await getDownloadURL(uploadTask.ref);
+                await uploadBytes(storageRef, avatarFile);
+                newAvatarUrl = await getDownloadURL(storageRef);
             }
             
-            // 2. Update Firebase Auth profile
+            // 3. Update Firebase Auth profile
             await updateProfile(user, {
                 displayName: name,
                 photoURL: newAvatarUrl
             });
 
-            // 3. Prepare and save data to Firestore
+            // 4. Use a Firestore batch to update users and usernames atomically
+            const batch = writeBatch(firestore);
+
             const userDocRef = doc(firestore, 'users', user.uid);
             const profileUrl = `${window.location.origin}/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
             
-            const updatedData = {
+            batch.set(userDocRef, {
                 id: user.uid,
                 name: name,
                 username: username,
@@ -91,41 +122,37 @@ export default function EditProfilePage() {
                 avatarUrl: newAvatarUrl,
                 profileUrl: profileUrl,
                 qrCodeUrl: qrCodeUrl
-            };
+            }, { merge: true });
 
-            // 4. Await the Firestore operation. Use setDoc with merge to create or update.
-            await setDoc(userDocRef, updatedData, { merge: true });
+            // If username changed, update the usernames collection
+            if (username !== initialUsername) {
+                const newUsernameDocRef = doc(firestore, "usernames", username);
+                batch.set(newUsernameDocRef, { userId: user.uid });
 
-            // 5. Reload user data and provide feedback
+                // And delete the old username doc
+                const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
+                batch.delete(oldUsernameDocRef);
+            }
+            
+            // 5. Commit the batch
+            await batch.commit();
+
+            // 6. Reload user data and provide feedback
             await reloadUser();
             toast({ title: 'Profile Saved!', description: 'Your changes have been successfully saved.' });
             success = true;
 
         } catch (error: any) {
-            console.error("Failed to save profile:", error);
-            let description = 'An unexpected error occurred.';
-            if (error.code) {
-                switch (error.code) {
-                    case 'storage/unauthorized':
-                        description = 'Permission denied: Make sure your Storage Rules allow avatar uploads.';
-                        break;
-                    case 'permission-denied':
-                        description = 'Permission denied: Make sure your Firestore Rules allow writing to your user profile.';
-                        break;
-                    default:
-                        description = error.message;
-                }
+            if (error.message !== "Username taken") {
+                console.error("Failed to save profile:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Save Failed',
+                    description: error.message || 'An unexpected error occurred.'
+                });
             }
-            toast({
-                variant: 'destructive',
-                title: 'Save Failed',
-                description: description
-            });
         } finally {
-            // This is the crucial part:
-            // 1. Always re-enable the form
             setIsSaving(false);
-            // 2. Navigate away ONLY if the save was successful
             if (success) {
                 router.push('/profile');
             }
@@ -197,3 +224,4 @@ export default function EditProfilePage() {
         </AppLayout>
     );
 }
+'''
