@@ -65,7 +65,7 @@ export default function EditProfilePage() {
         };
 
         fetchUserData();
-    }, [user, firestore, toast]);
+    }, [user, firestore]); // FIX: Removed unstable `toast` dependency
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
