@@ -16,6 +16,7 @@ import React from 'react';
 
 type PublicProfilePageProps = {
   params: { username: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export default function PublicProfilePage({ params }: PublicProfilePageProps) {
