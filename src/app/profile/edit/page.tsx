@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
-import { useFirebase } from "@/firebase";
+import { useFirebase, errorEmitter, FirestorePermissionError } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
@@ -77,19 +77,33 @@ export default function EditProfilePage() {
                 photoURL: newAvatarUrl
             });
 
-            // 3. Update Firestore document
+            // 3. Prepare data for Firestore update
             const userDocRef = doc(firestore, 'users', user.uid);
-            await updateDoc(userDocRef, {
+            const updatedData = {
                 name: name,
                 username: username,
                 bio: bio,
                 avatarUrl: newAvatarUrl
-            });
+            };
 
-            // 4. Reload the user data in the auth context
+            // 4. Use non-blocking update with specific error handling for Firestore
+            updateDoc(userDocRef, updatedData)
+                .catch(error => {
+                    console.error('Firestore update failed:', error);
+                    // This will generate a rich error in the dev console if it's a permission issue
+                    const permissionError = new FirestorePermissionError({
+                        path: userDocRef.path,
+                        operation: 'update',
+                        requestResourceData: updatedData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+
+
+            // 5. Reload the user data in the auth context and give feedback optimistically
             await reloadUser();
 
-            toast({ title: 'Profile Updated', description: 'Your changes have been saved successfully.' });
+            toast({ title: 'Profile Update Queued', description: 'Your changes are being saved.' });
             router.push('/profile');
 
         } catch (error: any) {
@@ -97,7 +111,7 @@ export default function EditProfilePage() {
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
-                description: error.message || 'An unexpected error occurred.'
+                description: error.message || 'An unexpected error occurred while uploading the image or updating your auth profile.'
             });
         } finally {
             setIsSaving(false);
