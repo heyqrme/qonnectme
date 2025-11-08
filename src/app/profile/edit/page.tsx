@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
 import { useFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
@@ -60,7 +61,13 @@ export default function EditProfilePage() {
                 newAvatarUrl = await getDownloadURL(uploadTask.ref);
             }
             
-            // 2. Update Firestore document
+            // 2. Update Firebase Auth profile
+            await updateProfile(user, {
+                displayName: name,
+                photoURL: newAvatarUrl
+            });
+
+            // 3. Update Firestore document
             const userDocRef = doc(firestore, 'users', user.uid);
             await updateDoc(userDocRef, {
                 name: name,
@@ -71,6 +78,7 @@ export default function EditProfilePage() {
 
             toast({ title: 'Profile Updated', description: 'Your changes have been saved successfully.' });
             router.push('/profile');
+            router.refresh(); // Force a refresh to show updated auth state
 
         } catch (error: any) {
             console.error("Failed to save profile:", error);
