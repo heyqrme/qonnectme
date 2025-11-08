@@ -15,20 +15,30 @@ import { doc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 export default function EditProfilePage() {
-    const { user } = useAuth();
+    const { user, reloadUser } = useAuth();
     const { storage, firestore } = useFirebase();
     const { toast } = useToast();
     const router = useRouter();
 
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.photoURL || "https://placehold.co/128x128.png");
-    const [name, setName] = useState(user?.displayName || '');
-    const [username, setUsername] = useState(user?.email?.split('@')[0] || '');
-    const [bio, setBio] = useState(''); // Fetch this from Firestore in a useEffect if needed
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
+    const [bio, setBio] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setAvatarPreview(user.photoURL || "https://placehold.co/128x128.png");
+            setName(user.displayName || '');
+            setUsername(user.email?.split('@')[0] || '');
+            // In a real app, you'd fetch the bio from Firestore here.
+            // For now, we'll leave it blank or get it from a potential userProfile object.
+        }
+    }, [user]);
 
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,9 +86,11 @@ export default function EditProfilePage() {
                 avatarUrl: newAvatarUrl
             });
 
+            // 4. Reload the user data in the auth context
+            await reloadUser();
+
             toast({ title: 'Profile Updated', description: 'Your changes have been saved successfully.' });
             router.push('/profile');
-            router.refresh(); // Force a refresh to show updated auth state
 
         } catch (error: any) {
             console.error("Failed to save profile:", error);
@@ -107,7 +119,7 @@ export default function EditProfilePage() {
                                 <div className="relative group">
                                     <Avatar className="h-32 w-32">
                                         <AvatarImage src={avatarPreview || undefined} alt="User Avatar" data-ai-hint="person avatar" />
-                                        <AvatarFallback>JD</AvatarFallback>
+                                        <AvatarFallback>{name?.slice(0,2) || '...'}</AvatarFallback>
                                     </Avatar>
                                     <button
                                         onClick={() => avatarInputRef.current?.click()}

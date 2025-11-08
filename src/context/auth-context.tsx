@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -13,6 +13,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<boolean>;
     signup: (email: string, password: string, name: string) => Promise<boolean>;
     logout: () => void;
+    reloadUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +31,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsUserLoading(false);
         });
         return () => unsubscribe();
+    }, [auth]);
+    
+    const reloadUser = useCallback(async () => {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            await currentUser.reload();
+            // The onAuthStateChanged listener will automatically update the user state
+            // but we can force a re-render by setting the user state again.
+            setUser(auth.currentUser);
+        }
     }, [auth]);
 
     const login = async (email: string, password: string): Promise<boolean> => {
@@ -51,6 +62,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const newUser = userCredential.user;
+            
+            // Also update the display name in the auth profile
+            await updateProfile(newUser, { displayName: name, photoURL: `https://placehold.co/128x128.png` });
 
             const userRef = doc(firestore, 'users', newUser.uid);
             await setDoc(userRef, {
@@ -65,6 +79,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 photos: [],
                 videos: [],
             });
+            
+            // Reload user to get the latest profile data in the context
+            await newUser.reload();
+            setUser(auth.currentUser);
+
             return true;
         } catch (error: any) {
             console.error("Signup failed:", error);
@@ -91,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const value = { user, isUserLoading, login, signup, logout };
+    const value = { user, isUserLoading, login, signup, logout, reloadUser };
 
     return (
         <AuthContext.Provider value={value}>
