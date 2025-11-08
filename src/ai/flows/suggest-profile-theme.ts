@@ -40,7 +40,7 @@ Music taste: {{{musicTaste}}}
 Media description: {{{mediaDescription}}}`,
 });
 
-const suggestProfileThemeFlow = ai.defineFlow(
+export const suggestProfileThemeFlow = ai.defineFlow(
   {
     name: 'suggestProfileThemeFlow',
     inputSchema: SuggestProfileThemeInputSchema,

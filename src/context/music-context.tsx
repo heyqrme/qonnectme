@@ -26,22 +26,39 @@ interface MusicContextType {
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
-const initialSongs: Song[] = [
+const defaultInitialSongs: Song[] = [
     { id: 1, title: "Groovy Morning", artist: "The Chillhop Collective", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
     { id: 2, title: "Sunset Vibes", artist: "Indie Pop Creators", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
     { id: 3, title: "Midnight Stroll", artist: "Synthwave Dreams", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mpj" },
 ];
 
 export const MusicProvider = ({ children }: { children: ReactNode }) => {
-    const [songs, setSongs] = useState<Song[]>(initialSongs);
+    const [songs, setSongs] = useState<Song[]>(() => {
+        if (typeof window === 'undefined') {
+            return defaultInitialSongs;
+        }
+        try {
+            const savedSongs = window.localStorage.getItem('songs');
+            // Check if savedSongs exists and is not an empty string before parsing
+            return savedSongs ? JSON.parse(savedSongs) : defaultInitialSongs;
+        } catch (error) {
+            console.error("Failed to parse songs from localStorage", error);
+            return defaultInitialSongs;
+        }
+    });
+    
     const [currentSongIndex, setCurrentSongIndex] = useState<number | null>(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
-    const isPlayingRef = useRef(isPlaying);
 
     useEffect(() => {
-        isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
+        try {
+            window.localStorage.setItem('songs', JSON.stringify(songs));
+        } catch (error) {
+            console.error("Failed to save songs to localStorage", error);
+        }
+    }, [songs]);
+
 
     const handlePlayPause = (index?: number) => {
         const targetIndex = index ?? currentSongIndex;
@@ -123,8 +140,11 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
                     playPromise.then(_ => {
                         setIsPlaying(true);
                     }).catch(error => {
-                        console.error("Audio play failed on new song:", error);
-                        setIsPlaying(false);
+                        // The infamous AbortError is not critical and can be ignored.
+                        if (error.name !== 'AbortError') {
+                            console.error("Audio play failed on new song:", error);
+                            setIsPlaying(false);
+                        }
                     });
                 }
             }
