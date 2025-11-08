@@ -11,7 +11,7 @@ import { useAuth } from "@/context/auth-context";
 import { useFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, getDoc, writeBatch, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, writeBatch } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,6 @@ export default function EditProfilePage() {
             setAvatarPreview(user.photoURL || `https://placehold.co/128x128.png`);
             setName(user.displayName || '');
             
-            // Fetch profile from Firestore to get username and bio
             const userDocRef = doc(firestore, "users", user.uid);
             getDoc(userDocRef).then(docSnap => {
                 if (docSnap.exists()) {
@@ -70,7 +69,7 @@ export default function EditProfilePage() {
     
     const handleSaveChanges = async () => {
         if (!user) {
-            toast({ variant: 'destructive', title: 'Not authenticated', description: 'You must be logged in to save changes.' });
+            toast({ variant: 'destructive', title: 'Not authenticated' });
             return;
         }
 
@@ -78,38 +77,29 @@ export default function EditProfilePage() {
         let success = false;
 
         try {
-            // 1. Check if username is taken, but only if it has changed
             if (username !== initialUsername) {
                 const usernameDocRef = doc(firestore, "usernames", username);
                 const usernameDoc = await getDoc(usernameDocRef);
                 if (usernameDoc.exists()) {
-                    toast({
-                        variant: "destructive",
-                        title: "Username Taken",
-                        description: "This username is already in use. Please choose another one.",
-                    });
-                    throw new Error("Username taken"); // Abort the save
+                    toast({ variant: "destructive", title: "Username Taken" });
+                    throw new Error("Username taken");
                 }
             }
 
             let newAvatarUrl = user.photoURL;
 
-            // 2. Upload new avatar if one was selected
             if (avatarFile) {
                 const storageRef = ref(storage, `avatars/${user.uid}/${avatarFile.name}`);
                 await uploadBytes(storageRef, avatarFile);
                 newAvatarUrl = await getDownloadURL(storageRef);
             }
             
-            // 3. Update Firebase Auth profile
             await updateProfile(user, {
                 displayName: name,
                 photoURL: newAvatarUrl
             });
 
-            // 4. Use a Firestore batch to update users and usernames atomically
             const batch = writeBatch(firestore);
-
             const userDocRef = doc(firestore, 'users', user.uid);
             const profileUrl = `${window.location.origin}/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
@@ -124,33 +114,27 @@ export default function EditProfilePage() {
                 qrCodeUrl: qrCodeUrl
             }, { merge: true });
 
-            // If username changed, update the usernames collection
             if (username !== initialUsername) {
                 const newUsernameDocRef = doc(firestore, "usernames", username);
                 batch.set(newUsernameDocRef, { userId: user.uid });
-
-                // And delete the old username doc
                 const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
                 batch.delete(oldUsernameDocRef);
             }
             
-            // 5. Commit the batch
             await batch.commit();
 
-            // 6. Reload user data and provide feedback
             await reloadUser();
-            toast({ title: 'Profile Saved!', description: 'Your changes have been successfully saved.' });
+            toast({ title: 'Profile Saved!' });
             success = true;
 
         } catch (error: any) {
-            if (error.message !== "Username taken") {
-                console.error("Failed to save profile:", error);
-                toast({
-                    variant: 'destructive',
-                    title: 'Save Failed',
-                    description: error.message || 'An unexpected error occurred.'
-                });
-            }
+            console.error("SAVE_PROFILE_ERROR:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Save Failed',
+                description: `Error: ${error.message} Code: ${error.code || 'N/A'}`,
+                duration: 10000, // Show toast for 10 seconds
+            });
         } finally {
             setIsSaving(false);
             if (success) {
