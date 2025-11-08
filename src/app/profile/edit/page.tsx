@@ -1,4 +1,4 @@
-''''use client';
+'use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,11 +31,10 @@ export default function EditProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [initialUsername, setInitialUsername] = useState('');
 
-
     useEffect(() => {
         if (user) {
             const initialUserUsername = user.email?.split('@')[0] || '';
-            setAvatarPreview(user.photoURL || `https://placehold.co/128x128.png`);
+            setAvatarPreview(user.photoURL);
             setName(user.displayName || '');
             
             const userDocRef = doc(firestore, "users", user.uid);
@@ -133,7 +132,7 @@ export default function EditProfilePage() {
                 variant: 'destructive',
                 title: 'Save Failed',
                 description: `Error: ${error.message} Code: ${error.code || 'N/A'}`,
-                duration: 10000, // Show toast for 10 seconds
+                duration: 10000,
             });
         } finally {
             setIsSaving(false);
@@ -142,7 +141,6 @@ export default function EditProfilePage() {
             }
         }
     };
-
 
     return (
         <AppLayout>
@@ -208,4 +206,3 @@ export default function EditProfilePage() {
         </AppLayout>
     );
 }
-'''
