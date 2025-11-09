@@ -9,14 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
 import { useFirebase } from "@/firebase";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, getDoc, writeBatch } from "firebase/firestore";
+import { doc, getDoc, writeBatch, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function EditProfilePage() {
     const { user, reloadUser } = useAuth();
@@ -112,7 +113,7 @@ export default function EditProfilePage() {
             // This is a critical step. If it fails, we should stop.
             await updateProfile(user, { displayName: name, photoURL: newAvatarUrl });
     
-            // 4. Prepare Firestore updates in a batch
+            // 4. Prepare Firestore updates
             const profileUrl = `${window.location.origin}/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
             
@@ -127,8 +128,15 @@ export default function EditProfilePage() {
                 qrCodeUrl: qrCodeUrl,
             };
     
-            // Use the non-blocking update with error handling
-            setDocumentNonBlocking(userDocRef, userDocData, { merge: true });
+            // Use a non-blocking Firestore update with proper error handling
+            setDoc(userDocRef, userDocData, { merge: true }).catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: userDocData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     
             // Handle username document changes if necessary
             if (username !== initialUsername) {
@@ -149,7 +157,7 @@ export default function EditProfilePage() {
     
         } catch (error: any) {
             console.error("SAVE_PROFILE_ERROR:", error);
-            // This will catch errors from auth updates or username checks
+            // This will catch errors from auth updates, storage uploads, or username checks
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
