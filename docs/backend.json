@@ -4,41 +4,62 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user's profile within the Qonnectme application.",
+      "description": "Represents a user's profile with personal information and preferences.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user profile."
+          "description": "Unique identifier for the UserProfile entity."
         },
-        "qrCode": {
+        "username": {
           "type": "string",
-          "description": "The user's unique QR code string."
+          "description": "User's chosen username.",
+          "format": "string"
         },
-        "personalInformation": {
+        "displayName": {
           "type": "string",
-          "description": "User's personal information like bio or contact details."
+          "description": "User's display name, can be different from username."
         },
-        "profileThemeId": {
+        "bio": {
           "type": "string",
-          "description": "Reference to ProfileTheme. (Relationship: UserProfile 1:1 ProfileTheme)"
+          "description": "User's biography or short description."
         },
-        "photoIds": {
+        "profilePicture": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
+        "themeId": {
+          "type": "string",
+          "description": "Reference to Theme. (Relationship: Theme 1:1 UserProfile)"
+        },
+        "qrCodeId": {
+          "type": "string",
+          "description": "Reference to QRCode. (Relationship: QRCode 1:1 UserProfile)"
+        },
+        "friendIds": {
           "type": "array",
-          "description": "References to Photos. (Relationship: UserProfile 1:N Photo)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "videoIds": {
-          "type": "array",
-          "description": "References to Videos. (Relationship: UserProfile 1:N Video)",
+          "description": "References to UserProfiles representing the user's friends. (Relationship: UserProfile N:N UserProfile)",
           "items": {
             "type": "string"
           }
         },
         "musicIds": {
           "type": "array",
-          "description": "References to Musics. (Relationship: UserProfile 1:N Music)",
+          "description": "References to Musics. (Relationship: Music 1:N UserProfile)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "photoIds": {
+          "type": "array",
+          "description": "References to Photos. (Relationship: Photo 1:N UserProfile)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "videoIds": {
+          "type": "array",
+          "description": "References to Videos. (Relationship: Video 1:N UserProfile)",
           "items": {
             "type": "string"
           }
@@ -46,37 +67,94 @@
       },
       "required": [
         "id",
-        "qrCode"
+        "username",
+        "displayName"
       ]
     },
-    "FriendRequest": {
+    "QRCode": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FriendRequest",
+      "title": "QRCode",
       "type": "object",
-      "description": "Represents a friend request between two users.",
+      "description": "Represents a unique QR code associated with a user.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the friend request."
+          "description": "Unique identifier for the QRCode entity."
         },
-        "senderId": {
+        "qrCodeData": {
           "type": "string",
-          "description": "Reference to UserProfile who sent the request. (Relationship: UserProfile 1:N FriendRequest)"
-        },
-        "receiverId": {
-          "type": "string",
-          "description": "Reference to UserProfile who received the request. (Relationship: UserProfile 1:N FriendRequest)"
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the friend request (e.g., pending, accepted, rejected)."
+          "description": "The actual QR code data (e.g., URL or encoded information)."
         }
       },
       "required": [
         "id",
-        "senderId",
-        "receiverId",
-        "status"
+        "qrCodeData"
+      ]
+    },
+    "Theme": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Theme",
+      "type": "object",
+      "description": "Represents a theme that defines the visual appearance of a user's profile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Theme entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the theme (e.g., 'Dark Mode', 'Purple Haze')."
+        },
+        "primaryColor": {
+          "type": "string",
+          "description": "Hex code for the theme's primary color."
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "Hex code for the theme's background color."
+        },
+        "accentColor": {
+          "type": "string",
+          "description": "Hex code for the theme's accent color."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "primaryColor",
+        "backgroundColor",
+        "accentColor"
+      ]
+    },
+    "Music": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Music",
+      "type": "object",
+      "description": "Represents a music file uploaded by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Music entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the music track."
+        },
+        "artist": {
+          "type": "string",
+          "description": "Artist of the music track."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL of the music file.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "artist",
+        "fileUrl"
       ]
     },
     "Photo": {
@@ -87,27 +165,21 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the photo."
+          "description": "Unique identifier for the Photo entity."
         },
-        "userId": {
+        "description": {
           "type": "string",
-          "description": "Reference to UserProfile who uploaded the photo. (Relationship: UserProfile 1:N Photo)"
+          "description": "Description of the photo."
         },
-        "url": {
+        "fileUrl": {
           "type": "string",
-          "description": "URL of the photo."
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "Date and time when the photo was uploaded.",
-          "format": "date-time"
+          "description": "URL of the photo file.",
+          "format": "uri"
         }
       },
       "required": [
         "id",
-        "userId",
-        "url",
-        "uploadDate"
+        "fileUrl"
       ]
     },
     "Video": {
@@ -118,128 +190,21 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the video."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to UserProfile who uploaded the video. (Relationship: UserProfile 1:N Video)"
-        },
-        "url": {
-          "type": "string",
-          "description": "URL of the video."
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "Date and time when the video was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "url",
-        "uploadDate"
-      ]
-    },
-    "Music": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Music",
-      "type": "object",
-      "description": "Represents a music track uploaded or linked by a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the music track."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to UserProfile who uploaded the music. (Relationship: UserProfile 1:N Music)"
-        },
-        "url": {
-          "type": "string",
-          "description": "URL of the music track."
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "Date and time when the music was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "url",
-        "uploadDate"
-      ]
-    },
-    "StoreItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StoreItem",
-      "type": "object",
-      "description": "Represents an item available in the QR code merchandise store.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the store item."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the store item."
+          "description": "Unique identifier for the Video entity."
         },
         "description": {
           "type": "string",
-          "description": "Description of the store item."
+          "description": "Description of the video."
         },
-        "price": {
-          "type": "number",
-          "description": "Price of the store item."
-        },
-        "imageUrl": {
+        "fileUrl": {
           "type": "string",
-          "description": "URL of the store item's image."
+          "description": "URL of the video file.",
+          "format": "uri"
         }
       },
       "required": [
         "id",
-        "name",
-        "description",
-        "price",
-        "imageUrl"
-      ]
-    },
-    "ProfileTheme": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProfileTheme",
-      "type": "object",
-      "description": "Represents a theme for a user's profile, potentially generated by AI.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the profile theme."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the theme."
-        },
-        "primaryColor": {
-          "type": "string",
-          "description": "Primary color of the theme."
-        },
-        "secondaryColor": {
-          "type": "string",
-          "description": "Secondary color of the theme."
-        },
-        "font": {
-          "type": "string",
-          "description": "Font used in the theme."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "primaryColor",
-        "secondaryColor",
-        "font"
+        "fileUrl"
       ]
     }
   },
@@ -252,37 +217,69 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
+        "path": "/users/{userId}/profile",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Collection to store user profiles. The 'userId' is obtained from 'request.auth.uid'.",
+          "description": "Stores user profile data. Accessible only to the authenticated user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user. It comes from request.auth.uid"
+              "description": "The unique identifier of the user."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/profiles/{profileId}",
+        "path": "/users/{userId}/qrCode",
         "definition": {
-          "entityName": "UserProfile",
+          "entityName": "QRCode",
           "schema": {
-            "$ref": "#/backend/entities/UserProfile"
+            "$ref": "#/backend/entities/QRCode"
           },
-          "description": "Subcollection to store individual user profiles. Path-based rules secure access.",
+          "description": "Stores QR code data associated with a user. Accessible only to the authenticated user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/theme",
+        "definition": {
+          "entityName": "Theme",
+          "schema": {
+            "$ref": "#/backend/entities/Theme"
+          },
+          "description": "Stores theme data for a user's profile. Accessible only to the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/musics/{musicId}",
+        "definition": {
+          "entityName": "Music",
+          "schema": {
+            "$ref": "#/backend/entities/Music"
+          },
+          "description": "Stores music uploaded by a user. Accessible only to the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
             },
             {
-              "name": "profileId",
-              "description": "The unique identifier for the user profile."
+              "name": "musicId",
+              "description": "The unique identifier of the music file."
             }
           ]
         }
@@ -294,15 +291,15 @@
           "schema": {
             "$ref": "#/backend/entities/Photo"
           },
-          "description": "Subcollection to store user-uploaded photos. Path-based rules ensure that only the user can access their own content.",
+          "description": "Stores photos uploaded by a user. Accessible only to the authenticated user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "The unique identifier of the user."
             },
             {
               "name": "photoId",
-              "description": "The unique identifier for the photo."
+              "description": "The unique identifier of the photo."
             }
           ]
         }
@@ -314,104 +311,20 @@
           "schema": {
             "$ref": "#/backend/entities/Video"
           },
-          "description": "Subcollection to store user-uploaded videos. Path-based rules ensure that only the user can access their own content.",
+          "description": "Stores videos uploaded by a user. Accessible only to the authenticated user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "The unique identifier of the user."
             },
             {
               "name": "videoId",
-              "description": "The unique identifier for the video."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/music/{musicId}",
-        "definition": {
-          "entityName": "Music",
-          "schema": {
-            "$ref": "#/backend/entities/Music"
-          },
-          "description": "Subcollection to store user-uploaded music. Path-based rules ensure that only the user can access their own content.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "musicId",
-              "description": "The unique identifier for the music."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/friend_requests/{friendRequestId}",
-        "definition": {
-          "entityName": "FriendRequest",
-          "schema": {
-            "$ref": "#/backend/entities/FriendRequest"
-          },
-          "description": "Collection to store friend requests. 'senderId' and 'receiverId' fields are used to determine access.",
-          "params": [
-            {
-              "name": "friendRequestId",
-              "description": "The unique identifier for the friend request."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/store_items/{storeItemId}",
-        "definition": {
-          "entityName": "StoreItem",
-          "schema": {
-            "$ref": "#/backend/entities/StoreItem"
-          },
-          "description": "Collection to store items available in the store. These are globally readable and writable only by admins (enforced via a separate `/roles_admin/{uid}` collection).",
-          "params": [
-            {
-              "name": "storeItemId",
-              "description": "The unique identifier for the store item."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/profile_themes/{profileThemeId}",
-        "definition": {
-          "entityName": "ProfileTheme",
-          "schema": {
-            "$ref": "#/backend/entities/ProfileTheme"
-          },
-          "description": "Collection to store themes available to users. These are globally readable, but create/update permissions are restricted to admins.",
-          "params": [
-            {
-              "name": "profileThemeId",
-              "description": "The unique identifier for the profile theme."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "An existence-based collection to grant admin privileges. If a document exists for a 'userId' here, the user is considered an admin.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user with admin privileges."
+              "description": "The unique identifier of the video."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, adhering to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization independence is achieved through denormalization.  Specifically, for collaborative data (if any), membership maps (`members: {uid1: \"role\", uid2: \"role\"}`) will be denormalized where needed to avoid `get()` calls in security rules.  Structural Segregation is applied by grouping documents with similar security requirements into the same collections (e.g., user-owned data under `/users/{userId}`). Access modeling follows the principle of path-based ownership for private data (e.g., `/users/{userId}/profiles/{profileId}`).\n\n*   `/users/{userId}`: This collection stores user-related data, primarily for authentication context. The `userId` is obtained from `request.auth.uid`. Subcollections will contain private user data.\n*   `/users/{userId}/profiles/{profileId}`: Stores individual user profiles. The `profileId` is a unique identifier for each profile. Path-based rules secure access.\n*   `/users/{userId}/photos/{photoId}`, `/users/{userId}/videos/{videoId}`, `/users/{userId}/music/{musicId}`: Stores user-uploaded multimedia content. Path-based rules ensure that only the user can access their own content.\n*   `/friend_requests/{friendRequestId}`: Stores friend requests.  `senderId` and `receiverId` fields are used to determine access. Denormalization isn't needed here because rules will only enforce that a user can only create requests where they are the sender or receiver, or update requests where they are the receiver (accept/reject).\n*   `/store_items/{storeItemId}`: Stores items available in the store.  These are globally readable and writable only by admins (enforced via a separate `/roles_admin/{uid}` collection).\n*   `/profile_themes/{profileThemeId}`: Stores themes available to users. These are globally readable, but create/update permissions are restricted to admins.\n*   `/roles_admin/{userId}`: An existence-based collection to grant admin privileges. If a document exists for a `userId` here, the user is considered an admin.\n\nThis design supports QAPs. List operations are secured because each collection has a well-defined access pattern based on ownership or global roles. Authorization independence is achieved by avoiding `get()` calls and denormalizing membership where necessary.  The structure promotes clear and maintainable security rules."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the Qonnectme application. User profiles, themes, QR codes, music, photos, and videos are organized in a way that simplifies security rules and supports efficient data retrieval. This structure adheres to the core design principles, including Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters).\n\n1.  **UserProfile:** User profiles are stored under `/users/{userId}/profile`. This path-based ownership ensures that only the authenticated user can access and modify their profile data. No denormalization is required as the path inherently provides the authorization context. This satisfies the requirement for private data access.\n2.  **QRCode:** QR codes associated with user profiles are stored under `/users/{userId}/qrCode`. Similar to user profiles, path-based ownership is utilized, ensuring only the user can access their QR code. No denormalization is needed.\n3.  **Theme:** Themes are stored under `/users/{userId}/theme`. This continues the path-based ownership pattern, providing secure access to user-specific themes. No denormalization is required.\n4.  **Music, Photos, and Videos:** Music, photos, and videos uploaded by users are stored under `/users/{userId}/musics/{musicId}`, `/users/{userId}/photos/{photoId}`, and `/users/{userId}/videos/{videoId}` respectively. This hierarchical path structure maintains ownership and simplifies security rules. No denormalization is needed as the ownership is implicit in the path.\n\n**Authorization Independence and QAPs:**\n\n*   The path-based ownership model ensures that authorization is independent of the data content. Security rules can be written based solely on the path and the authenticated user's ID, without requiring `get()` calls to parent documents. This allows for atomic operations and easier debugging.\n*   Structural Segregation is used by separating user-specific data into dedicated subcollections under `/users/{userId}`. Each of these subcollections (profile, qrCode, theme, musics, photos, videos) has homogeneous security requirements, further simplifying the rules.\n*   QAPs are supported because list operations can be secured based on the path. For example, listing photos under `/users/{userId}/photos` only requires checking if the authenticated user ID matches the `{userId}` path parameter. Rules do not filter; they authorize or deny access based on the request's path and authentication state."
   }
 }
