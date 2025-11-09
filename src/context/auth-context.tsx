@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 
 interface AuthContextType {
     user: User | null;
@@ -63,16 +63,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const newUser = userCredential.user;
             
-            // Also update the display name in the auth profile
             await updateProfile(newUser, { displayName: name, photoURL: `https://placehold.co/128x128.png` });
 
-            const username = email.split('@')[0];
+            const username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
             const profileUrl = `/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${window.location.origin}${profileUrl}`;
 
-            // Corrected to write to the /users/{uid}/profile/main subcollection
-            const userRef = doc(firestore, 'users', newUser.uid, 'profile', 'main');
-            await setDoc(userRef, {
+            // Use a batch to write to both collections atomically
+            const batch = writeBatch(firestore);
+
+            const profileRef = doc(firestore, 'users', newUser.uid, 'profile', 'main');
+            batch.set(profileRef, {
                 id: newUser.uid,
                 name: name,
                 username: username,
@@ -83,7 +84,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 avatarUrl: `https://placehold.co/128x128.png`,
             });
             
-            // Reload user to get the latest profile data in the context
+            const usernameRef = doc(firestore, 'usernames', username);
+            batch.set(usernameRef, { uid: newUser.uid });
+            
+            await batch.commit();
+            
             await newUser.reload();
             setUser(auth.currentUser);
 

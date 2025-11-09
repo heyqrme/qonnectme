@@ -12,8 +12,9 @@ import { useFirebase } from "@/firebase";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
 import { useToast } from "@/hooks/use-toast";
+import { isUsernameAvailable } from "@/lib/firebase-utils";
 import { updateProfile } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -93,15 +94,8 @@ export default function EditProfilePage() {
         try {
             // 1. Check for username uniqueness if it has changed
             if (username !== initialUsername) {
-                const profilesCollectionGroup = query(collection(firestore, "users"), where("username", "==", username));
-                const querySnapshot = await getDocs(profilesCollectionGroup);
-
-                // We need to check subcollections, so we query the parent and then check the subcollection.
-                // This is not efficient, a better approach is a top-level `usernames` collection for lookups.
-                // For this app's scale, we'll check across user profiles.
-                const usernameExists = !querySnapshot.empty;
-
-                if (usernameExists) {
+                const usernameIsFree = await isUsernameAvailable(firestore, username);
+                if (!usernameIsFree) {
                     toast({ variant: "destructive", title: "Username Taken", description: "This username is already in use. Please choose another." });
                     setIsSaving(false);
                     return;
@@ -119,11 +113,13 @@ export default function EditProfilePage() {
             // 3. Update Firebase Auth Profile
             await updateProfile(user, { displayName: name, photoURL: newAvatarUrl });
     
-            // 4. Prepare Firestore update for the subcollection document
+            // 4. Prepare Firestore batch write
+            const batch = writeBatch(firestore);
+
             const profileUrl = `${window.location.origin}/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
             
-            const userDocRef = doc(firestore, 'users', user.uid, 'profile', 'main');
+            const profileDocRef = doc(firestore, 'users', user.uid, 'profile', 'main');
             const userDocData = {
                 id: user.uid,
                 name: name,
@@ -133,39 +129,40 @@ export default function EditProfilePage() {
                 profileUrl: profileUrl,
                 qrCodeUrl: qrCodeUrl,
             };
-    
-            // 5. Use a non-blocking Firestore update with proper error handling
-            setDoc(userDocRef, userDocData, { merge: true })
-                .then(async () => {
-                    // On success, reload user and navigate
-                    await reloadUser();
-                    toast({ title: 'Profile Saved!' });
-                    router.push('/profile');
-                })
-                .catch(error => {
-                    const permissionError = new FirestorePermissionError({
-                        path: userDocRef.path,
-                        operation: 'update',
-                        requestResourceData: userDocData,
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                })
-                .finally(() => {
-                    // This will run whether the setDoc succeeds or fails.
-                    // We only stop saving here.
-                    setIsSaving(false);
-                });
+            batch.set(profileDocRef, userDocData, { merge: true });
+
+            // Also update the usernames collection
+            if (username !== initialUsername) {
+                const oldUsernameRef = doc(firestore, 'usernames', initialUsername);
+                batch.delete(oldUsernameRef);
+                const newUsernameRef = doc(firestore, 'usernames', username);
+                batch.set(newUsernameRef, { uid: user.uid });
+            }
+            
+            // 5. Commit the batch write
+            await batch.commit();
+
+            await reloadUser();
+            toast({ title: 'Profile Saved!' });
+            router.push('/profile');
     
         } catch (error: any) {
-            // This will catch errors from auth updates, storage uploads, or username checks
             console.error("SAVE_PROFILE_ERROR:", error);
+            const permissionError = new FirestorePermissionError({
+                path: `users/${user.uid}/profile/main or /usernames/${username}`,
+                operation: 'write',
+                requestResourceData: { name, username, bio },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
-                description: `An unexpected error occurred: ${error.message}`,
+                description: `An unexpected error occurred. Please check the console.`,
                 duration: 9000,
             });
-            setIsSaving(false); // Ensure spinner stops on these errors too
+        } finally {
+            setIsSaving(false);
         }
     };
 

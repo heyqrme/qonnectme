@@ -77,6 +77,21 @@
         "email"
       ]
     },
+    "Username": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Username",
+      "type": "object",
+      "description": "A lookup entity to ensure username uniqueness.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user ID (uid) associated with the username."
+        }
+      },
+      "required": [
+        "uid"
+      ]
+    },
     "QRCode": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "QRCode",
@@ -329,9 +344,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/usernames/{username}",
+        "definition": {
+          "entityName": "Username",
+          "schema": {
+            "$ref": "#/backend/entities/Username"
+          },
+          "description": "Top-level collection for enforcing unique usernames.",
+          "params": [
+            {
+              "name": "username",
+              "description": "The unique username chosen by the user."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the Qonnectme application. User profiles, themes, QR codes, music, photos, and videos are organized in a way that simplifies security rules and supports efficient data retrieval. This structure adheres to the core design principles, including Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters).\n\n1.  **UserProfile:** User profiles are stored under `/users/{userId}/profile`. This path-based ownership ensures that only the authenticated user can access and modify their profile data. No denormalization is required as the path inherently provides the authorization context. This satisfies the requirement for private data access.\n2.  **QRCode:** QR codes associated with user profiles are stored under `/users/{userId}/qrCode`. Similar to user profiles, path-based ownership is utilized, ensuring only the user can access their QR code. No denormalization is needed.\n3.  **Theme:** Themes are stored under `/users/{userId}/theme`. This continues the path-based ownership pattern, providing secure access to user-specific themes. No denormalization is required.\n4.  **Music, Photos, and Videos:** Music, photos, and videos uploaded by users are stored under `/users/{userId}/musics/{musicId}`, `/users/{userId}/photos/{photoId}`, and `/users/{userId}/videos/{videoId}` respectively. This hierarchical path structure maintains ownership and simplifies security rules. No denormalization is needed as the ownership is implicit in the path.\n\n**Authorization Independence and QAPs:**\n\n*   The path-based ownership model ensures that authorization is independent of the data content. Security rules can be written based solely on the path and the authenticated user's ID, without requiring `get()` calls to parent documents. This allows for atomic operations and easier debugging.\n*   Structural Segregation is used by separating user-specific data into dedicated subcollections under `/users/{userId}`. Each of these subcollections (profile, qrCode, theme, musics, photos, videos) has homogeneous security requirements, further simplifying the rules.\n*   QAPs are supported because list operations can be secured based on the path. For example, listing photos under `/users/{userId}/photos` only requires checking if the authenticated user ID matches the `{userId}` path parameter. Rules do not filter; they authorize or deny access based on the request's path and authentication state."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the Qonnectme application. User profiles, themes, QR codes, music, photos, and videos are organized in a way that simplifies security rules and supports efficient data retrieval. A top-level 'usernames' collection has been added to enforce unique usernames across the application, a common and scalable pattern for this requirement. This structure adheres to the core design principles, including Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters).\n\n1.  **UserProfile:** User profiles are stored under `/users/{userId}/profile`. This path-based ownership ensures that only the authenticated user can access and modify their profile data. No denormalization is required as the path inherently provides the authorization context. This satisfies the requirement for private data access.\n2.  **QRCode:** QR codes associated with user profiles are stored under `/users/{userId}/qrCode`. Similar to user profiles, path-based ownership is utilized, ensuring only the user can access their QR code. No denormalization is needed.\n3.  **Theme:** Themes are stored under `/users/{userId}/theme`. This continues the path-based ownership pattern, providing secure access to user-specific themes. No denormalization is required.\n4.  **Music, Photos, and Videos:** Music, photos, and videos uploaded by users are stored under `/users/{userId}/musics/{musicId}`, `/users/{userId}/photos/{photoId}`, and `/users/{userId}/videos/{videoId}` respectively. This hierarchical path structure maintains ownership and simplifies security rules. No denormalization is needed as the ownership is implicit in the path.\n5.  **Usernames:** A top-level collection `/usernames/{username}` is used to ensure every username is unique. The document ID is the username itself, and it stores the `uid` of the user who owns it. This allows for a fast and efficient check (`get /usernames/<new_username>`) before allowing a user to claim a name. Security rules ensure a user can only create or delete a username document that corresponds to their own `uid`.\n\n**Authorization Independence and QAPs:**\n\n*   The path-based ownership model ensures that authorization is independent of the data content. Security rules can be written based solely on the path and the authenticated user's ID, without requiring `get()` calls to parent documents. This allows for atomic operations and easier debugging.\n*   Structural Segregation is used by separating user-specific data into dedicated subcollections under `/users/{userId}`. Each of these subcollections (profile, qrCode, theme, musics, photos, videos) has homogeneous security requirements, further simplifying the rules.\n*   QAPs are supported because list operations can be secured based on the path. For example, listing photos under `/users/{userId}/photos` only requires checking if the authenticated user ID matches the `{userId}` path parameter. Rules do not filter; they authorize or deny access based on the request's path and authentication state."
   }
 }
-    
