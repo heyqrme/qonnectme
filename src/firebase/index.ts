@@ -9,11 +9,9 @@ import { getStorage } from 'firebase/storage';
 // This function ensures Firebase is initialized, but only once.
 export function initializeFirebase() {
   if (getApps().length === 0) {
-    // If no app is initialized, initialize one with the provided config.
     const firebaseApp = initializeApp(firebaseConfig);
     return getSdks(firebaseApp);
   }
-  // If an app is already initialized, just get the existing one.
   return getSdks(getApp());
 }
 
