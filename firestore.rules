@@ -10,26 +10,13 @@ service cloud.firestore {
 
     /**
      * @description Enforces access control for user profile documents. Only the authenticated user can read or write their own profile.
-     * @path /users/{userId}/profile
+     * @path /users/{userId}/profile/{profileDocId}
      * @allow (create, update, delete, get, list) if the authenticated user ID matches the userId in the path.
      * @deny (create, update, delete, get, list) if the authenticated user ID does not match the userId in the path.
      * @principle Enforces document ownership for all operations.
      */
-    match /users/{userId}/profile {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if false;
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+    match /users/{userId}/profile/{profileDocId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     /**
@@ -39,21 +26,8 @@ service cloud.firestore {
      * @deny (create, update, delete, get, list) if the authenticated user ID does not match the userId in the path.
      * @principle Enforces document ownership for all operations.
      */
-    match /users/{userId}/qrCode {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if false;
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+    match /users/{userId}/qrCode/{qrCodeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     /**
@@ -63,21 +37,8 @@ service cloud.firestore {
      * @deny (create, update, delete, get, list) if the authenticated user ID does not match the userId in the path.
      * @principle Enforces document ownership for all operations.
      */
-    match /users/{userId}/theme {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if false;
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+    match /users/{userId}/theme/{themeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     /**
@@ -88,20 +49,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/musics/{musicId} {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     /**
@@ -112,20 +60,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/photos/{photoId} {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     /**
@@ -136,20 +71,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/videos/{videoId} {
-      // Check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested userId matches the authenticated user's ID
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
