@@ -13,15 +13,16 @@ import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, getDoc, writeBatch, setDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
 
 export default function EditProfilePage() {
     const { user, reloadUser } = useAuth();
-    const { storage, firestore } = useFirebase();
+    const { firestore, firebaseApp } = useFirebase();
+    const storage = getStorage(firebaseApp);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -93,10 +94,9 @@ export default function EditProfilePage() {
         try {
             // 1. Check for username uniqueness if it has changed
             if (username !== initialUsername) {
-                // This query is inefficient at scale, but okay for this app.
-                // A better approach would be a 'usernames' collection for lookups.
-                const usersRef = collection(firestore, "users");
-                const q = query(usersRef, where("username", "==", username));
+                // Querying the 'profile' subcollection for the username
+                const profilesRef = collection(firestore, "users");
+                const q = query(collection(profilesRef, 'profile'), where("username", "==", username));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
                     toast({ variant: "destructive", title: "Username Taken", description: "This username is already in use. Please choose another." });
