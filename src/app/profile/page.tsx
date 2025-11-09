@@ -1,4 +1,4 @@
-''''use client';
+'use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -98,4 +98,3 @@ export default function ProfilePage() {
         </AppLayout>
     );
 }
-'''

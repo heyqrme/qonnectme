@@ -1,4 +1,4 @@
-''''use client';
+'use client';
 
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function EditProfilePage() {
     const { user, reloadUser } = useAuth();
@@ -65,7 +66,7 @@ export default function EditProfilePage() {
         };
 
         fetchUserData();
-    }, [user, firestore]); // FIX: Removed unstable `toast` dependency
+    }, [user, firestore, toast]);
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -84,71 +85,79 @@ export default function EditProfilePage() {
             toast({ variant: 'destructive', title: 'Not authenticated' });
             return;
         }
-
+    
         setIsSaving(true);
-        let success = false;
-
+    
         try {
+            // 1. Check for username uniqueness if it has changed
             if (username !== initialUsername) {
                 const usernameDocRef = doc(firestore, "usernames", username);
                 const usernameDoc = await getDoc(usernameDocRef);
                 if (usernameDoc.exists()) {
-                    toast({ variant: "destructive", title: "Username Taken" });
-                    throw new Error("Username taken");
+                    toast({ variant: "destructive", title: "Username Taken", description: "This username is already in use. Please choose another." });
+                    setIsSaving(false);
+                    return;
                 }
             }
-
+    
+            // 2. Upload avatar if a new one is selected
             let newAvatarUrl = user.photoURL;
-
             if (avatarFile) {
                 const storageRef = ref(storage, `avatars/${user.uid}/${avatarFile.name}`);
-                await uploadBytes(storageRef, avatarFile);
-                newAvatarUrl = await getDownloadURL(storageRef);
+                const uploadTask = await uploadBytes(storageRef, avatarFile);
+                newAvatarUrl = await getDownloadURL(uploadTask.ref);
             }
-
+    
+            // 3. Update Firebase Auth Profile
+            // This is a critical step. If it fails, we should stop.
             await updateProfile(user, { displayName: name, photoURL: newAvatarUrl });
-
-            const batch = writeBatch(firestore);
-            const userDocRef = doc(firestore, 'users', user.uid);
-            const profileUrl = `${window.location.origin}/${username}`;
+    
+            // 4. Prepare Firestore updates in a batch
+            const profileUrl = `${window.location.origin}/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
-
-            batch.set(userDocRef, {
+            
+            const userDocRef = doc(firestore, 'users', user.uid);
+            const userDocData = {
                 id: user.uid,
                 name: name,
                 username: username,
                 bio: bio,
                 avatarUrl: newAvatarUrl,
                 profileUrl: profileUrl,
-                qrCodeUrl: qrCodeUrl
-            }, { merge: true });
-
+                qrCodeUrl: qrCodeUrl,
+            };
+    
+            // Use the non-blocking update with error handling
+            setDocumentNonBlocking(userDocRef, userDocData, { merge: true });
+    
+            // Handle username document changes if necessary
             if (username !== initialUsername) {
+                const batch = writeBatch(firestore);
                 const newUsernameDocRef = doc(firestore, "usernames", username);
                 batch.set(newUsernameDocRef, { userId: user.uid });
-                const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
-                batch.delete(oldUsernameDocRef);
+                if (initialUsername) {
+                    const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
+                    batch.delete(oldUsernameDocRef);
+                }
+                await batch.commit();
             }
-
-            await batch.commit();
-
+    
+            // 5. Reload user data in the app and navigate
             await reloadUser();
             toast({ title: 'Profile Saved!' });
-            success = true;
-
+            router.push('/profile');
+    
         } catch (error: any) {
             console.error("SAVE_PROFILE_ERROR:", error);
+            // This will catch errors from auth updates or username checks
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
-                description: `Error: ${error.message} Code: ${error.code || 'N/A'}`,
-                duration: 10000,
+                description: `An unexpected error occurred: ${error.message}`,
+                duration: 9000,
             });
         } finally {
             setIsSaving(false);
-            if (success) {
-                router.push('/profile');
-            }
         }
     };
 
@@ -225,4 +234,3 @@ export default function EditProfilePage() {
         </AppLayout>
     );
 }
-'''
