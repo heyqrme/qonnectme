@@ -66,18 +66,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Also update the display name in the auth profile
             await updateProfile(newUser, { displayName: name, photoURL: `https://placehold.co/128x128.png` });
 
-            const userRef = doc(firestore, 'users', newUser.uid);
+            const username = email.split('@')[0];
+            const profileUrl = `/u/${username}`;
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${window.location.origin}${profileUrl}`;
+
+            // Corrected to write to the /users/{uid}/profile/main subcollection
+            const userRef = doc(firestore, 'users', newUser.uid, 'profile', 'main');
             await setDoc(userRef, {
                 id: newUser.uid,
                 name: name,
-                username: email.split('@')[0],
+                username: username,
                 email: newUser.email,
-                qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://qonnect.me/u/${newUser.uid}`,
-                profileUrl: `/u/${newUser.uid}`,
+                qrCodeUrl: qrCodeUrl,
+                profileUrl: profileUrl,
                 bio: `Welcome to my Qonnectme profile!`,
                 avatarUrl: `https://placehold.co/128x128.png`,
-                photos: [],
-                videos: [],
             });
             
             // Reload user to get the latest profile data in the context

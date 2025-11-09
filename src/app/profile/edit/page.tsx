@@ -13,7 +13,7 @@ import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
 import { useToast } from "@/hooks/use-toast";
 import { updateProfile } from "firebase/auth";
-import { doc, getDoc, writeBatch, setDoc } from "firebase/firestore";
+import { doc, getDoc, writeBatch, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { Camera, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,8 @@ export default function EditProfilePage() {
                 setName(user.displayName || '');
                 setAvatarPreview(user.photoURL);
 
-                const userDocRef = doc(firestore, "users", user.uid);
+                // Corrected path to point to the 'profile' subcollection
+                const userDocRef = doc(firestore, "users", user.uid, "profile", "main");
                 const docSnap = await getDoc(userDocRef);
 
                 if (docSnap.exists()) {
@@ -92,9 +93,12 @@ export default function EditProfilePage() {
         try {
             // 1. Check for username uniqueness if it has changed
             if (username !== initialUsername) {
-                const usernameDocRef = doc(firestore, "usernames", username);
-                const usernameDoc = await getDoc(usernameDocRef);
-                if (usernameDoc.exists()) {
+                // This query is inefficient at scale, but okay for this app.
+                // A better approach would be a 'usernames' collection for lookups.
+                const usersRef = collection(firestore, "users");
+                const q = query(usersRef, where("username", "==", username));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
                     toast({ variant: "destructive", title: "Username Taken", description: "This username is already in use. Please choose another." });
                     setIsSaving(false);
                     return;
@@ -110,14 +114,14 @@ export default function EditProfilePage() {
             }
     
             // 3. Update Firebase Auth Profile
-            // This is a critical step. If it fails, we should stop.
             await updateProfile(user, { displayName: name, photoURL: newAvatarUrl });
     
-            // 4. Prepare Firestore updates
+            // 4. Prepare Firestore update for the subcollection document
             const profileUrl = `${window.location.origin}/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
             
-            const userDocRef = doc(firestore, 'users', user.uid);
+            // Corrected path to point to the 'profile' subcollection
+            const userDocRef = doc(firestore, 'users', user.uid, 'profile', 'main');
             const userDocData = {
                 id: user.uid,
                 name: name,
@@ -137,18 +141,6 @@ export default function EditProfilePage() {
                 });
                 errorEmitter.emit('permission-error', permissionError);
             });
-    
-            // Handle username document changes if necessary
-            if (username !== initialUsername) {
-                const batch = writeBatch(firestore);
-                const newUsernameDocRef = doc(firestore, "usernames", username);
-                batch.set(newUsernameDocRef, { userId: user.uid });
-                if (initialUsername) {
-                    const oldUsernameDocRef = doc(firestore, "usernames", initialUsername);
-                    batch.delete(oldUsernameDocRef);
-                }
-                await batch.commit();
-            }
     
             // 5. Reload user data in the app and navigate
             await reloadUser();

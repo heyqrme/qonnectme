@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/context/auth-context";
 import { useFirebase } from "@/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
-import { Edit } from "lucide-react";
+import { Edit, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,32 +26,65 @@ function ProfilePage() {
     const { user } = useAuth();
     const { firestore } = useFirebase();
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (user) {
-            const userDocRef = doc(firestore, 'users', user.uid);
+            // Corrected path to point to the 'profile' subcollection
+            const userDocRef = doc(firestore, 'users', user.uid, 'profile', 'main');
             const unsubscribe = onSnapshot(userDocRef, (doc) => {
                 if (doc.exists()) {
                     setProfileData(doc.data() as ProfileData);
                 } else {
                     // Handle case where user document doesn't exist yet
-                    // This could be where you set some default data or guide the user to edit their profile
                     setProfileData({
                         name: user.displayName || 'No name set',
                         username: user.email?.split('@')[0] || 'username',
-                        bio: 'No bio set.',
+                        bio: 'No bio set. Click edit to create one!',
                         avatarUrl: user.photoURL || undefined,
                         qrCodeUrl: undefined, // No QR code until profile is saved
                     });
                 }
+                setIsLoading(false);
+            }, (error) => {
+                console.error("Error fetching profile:", error);
+                setIsLoading(false);
             });
 
             return () => unsubscribe();
+        } else {
+            setIsLoading(false);
         }
     }, [user, firestore]);
 
+    if (isLoading) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center flex-1">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+    
     if (!profileData) {
-        return <div>Loading profile...</div>; // Or a proper skeleton loader
+        return (
+             <AppLayout>
+                <div className="flex items-center justify-center flex-1">
+                   <Card className="max-w-md w-full text-center">
+                        <CardHeader>
+                            <CardTitle>Profile Not Found</CardTitle>
+                            <CardDescription>We couldn't load your profile. It might not be created yet.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <Link href="/profile/edit">
+                                <Button>Create Your Profile</Button>
+                            </Link>
+                        </CardContent>
+                   </Card>
+                </div>
+            </AppLayout>
+        )
     }
 
     const { name, username, bio, avatarUrl, qrCodeUrl } = profileData;
@@ -88,7 +121,7 @@ function ProfilePage() {
                                     <div className="mt-6 flex flex-col items-center">
                                         <Image src={qrCodeUrl} alt="QR Code" width={150} height={150} />
                                         <p className="mt-2 text-sm text-muted-foreground">
-                                            Scan this to view your profile
+                                            Scan this to connect
                                         </p>
                                     </div>
                                 )}
