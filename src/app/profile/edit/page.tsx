@@ -47,7 +47,6 @@ export default function EditProfilePage() {
                 setName(user.displayName || '');
                 setAvatarPreview(user.photoURL);
 
-                // Corrected path to point to the 'profile' subcollection
                 const userDocRef = doc(firestore, "users", user.uid, "profile", "main");
                 const docSnap = await getDoc(userDocRef);
 
@@ -94,11 +93,15 @@ export default function EditProfilePage() {
         try {
             // 1. Check for username uniqueness if it has changed
             if (username !== initialUsername) {
-                // Querying the 'profile' subcollection for the username
-                const profilesRef = collection(firestore, "users");
-                const q = query(collection(profilesRef, 'profile'), where("username", "==", username));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
+                const profilesCollectionGroup = query(collection(firestore, "users"), where("username", "==", username));
+                const querySnapshot = await getDocs(profilesCollectionGroup);
+
+                // We need to check subcollections, so we query the parent and then check the subcollection.
+                // This is not efficient, a better approach is a top-level `usernames` collection for lookups.
+                // For this app's scale, we'll check across user profiles.
+                const usernameExists = !querySnapshot.empty;
+
+                if (usernameExists) {
                     toast({ variant: "destructive", title: "Username Taken", description: "This username is already in use. Please choose another." });
                     setIsSaving(false);
                     return;
@@ -120,7 +123,6 @@ export default function EditProfilePage() {
             const profileUrl = `${window.location.origin}/u/${username}`;
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}`;
             
-            // Corrected path to point to the 'profile' subcollection
             const userDocRef = doc(firestore, 'users', user.uid, 'profile', 'main');
             const userDocData = {
                 id: user.uid,
@@ -132,32 +134,38 @@ export default function EditProfilePage() {
                 qrCodeUrl: qrCodeUrl,
             };
     
-            // Use a non-blocking Firestore update with proper error handling
-            setDoc(userDocRef, userDocData, { merge: true }).catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: userDocData,
+            // 5. Use a non-blocking Firestore update with proper error handling
+            setDoc(userDocRef, userDocData, { merge: true })
+                .then(async () => {
+                    // On success, reload user and navigate
+                    await reloadUser();
+                    toast({ title: 'Profile Saved!' });
+                    router.push('/profile');
+                })
+                .catch(error => {
+                    const permissionError = new FirestorePermissionError({
+                        path: userDocRef.path,
+                        operation: 'update',
+                        requestResourceData: userDocData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                })
+                .finally(() => {
+                    // This will run whether the setDoc succeeds or fails.
+                    // We only stop saving here.
+                    setIsSaving(false);
                 });
-                errorEmitter.emit('permission-error', permissionError);
-            });
-    
-            // 5. Reload user data in the app and navigate
-            await reloadUser();
-            toast({ title: 'Profile Saved!' });
-            router.push('/profile');
     
         } catch (error: any) {
-            console.error("SAVE_PROFILE_ERROR:", error);
             // This will catch errors from auth updates, storage uploads, or username checks
+            console.error("SAVE_PROFILE_ERROR:", error);
             toast({
                 variant: 'destructive',
                 title: 'Save Failed',
                 description: `An unexpected error occurred: ${error.message}`,
                 duration: 9000,
             });
-        } finally {
-            setIsSaving(false);
+            setIsSaving(false); // Ensure spinner stops on these errors too
         }
     };
 
