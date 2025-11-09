@@ -21,15 +21,8 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'your-other-hostname.com', // Replace with actual hostname
-        port: '',
-        pathname: '/**',
-      },
     ],
   },
 };
 
 module.exports = nextConfig;
-
