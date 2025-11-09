@@ -11,6 +11,8 @@ import { Edit } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MusicProvider } from '@/context/music-context';
+import { MusicPlayer } from '@/components/music-player';
 
 interface ProfileData {
     name?: string;
@@ -20,7 +22,7 @@ interface ProfileData {
     qrCodeUrl?: string; // Expect this from the database
 }
 
-export default function ProfilePage() {
+function ProfilePage() {
     const { user } = useAuth();
     const { firestore } = useFirebase();
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -96,5 +98,15 @@ export default function ProfilePage() {
                 </div>
             </main>
         </AppLayout>
+    );
+}
+
+
+export default function ProfilePageWrapper() {
+    return (
+        <MusicProvider>
+            <ProfilePage />
+            <MusicPlayer />
+        </MusicProvider>
     );
 }

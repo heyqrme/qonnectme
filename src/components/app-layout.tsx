@@ -1,8 +1,6 @@
 'use client';
 
 import { AppHeader } from "@/components/app-header";
-import { MusicPlayer } from "@/components/music-player";
-import { MusicProvider } from "@/context/music-context";
 import React from "react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -10,12 +8,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   // This layout is now only responsible for rendering the app's structure (header, content, music player).
   
   return (
-    <MusicProvider>
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <AppHeader />
-            {children}
-        </div>
-        <MusicPlayer />
-    </MusicProvider>
+    <div className="flex min-h-screen w-full flex-col bg-background">
+        <AppHeader />
+        {children}
+    </div>
   );
 }
