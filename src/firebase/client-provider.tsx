@@ -9,7 +9,7 @@ interface FirebaseClientProviderProps {
 }
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  // `useMemo` ensures `initializeFirebase` is called only once.
+  // `useMemo` ensures `initializeFirebase` is called only once on the client.
   const { firebaseApp, auth, firestore, storage } = useMemo(() => initializeFirebase(), []);
 
   return (
