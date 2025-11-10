@@ -264,7 +264,8 @@ export default function Home() {
                         alt="Demo QR Code"
                         width={200} 
                         height={200}
-                        className={cn("mx-auto w-auto h-auto transition-all duration-300 rounded-md", isDark && hoverQR ? 'qr-pulse scale-105' : '')}
+                        style={{ width: 'auto', height: 'auto' }}
+                        className={cn("mx-auto transition-all duration-300 rounded-md", isDark && hoverQR ? 'qr-pulse scale-105' : '')}
                         data-ai-hint="qr code"
                       />
                       <p className={cn("text-center mt-2 text-sm", isDark ? 'text-gray-400' : 'text-gray-500')}>   Scan Me I like you</p>
